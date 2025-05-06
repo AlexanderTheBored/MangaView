@@ -1,6 +1,13 @@
 - 📖 About MangaView -
   
-MangaView is a personal project I built to practice and improve my front-end development skills through hands-on experience. It features a responsive layout, animated UI, and basic login functionality—drawing inspiration from platforms like Mihon and MangaDex.
+MangaView is a personal project built to sharpen my front-end skills through real practice. It's a manga reading website—currently focused on UI/UX and browsing features—that will eventually evolve into a self-hosted personal manga library.
 
-And yes—MangaView is just a temporary name. I’ll probably rename it to Alexandria later, like the ancient library.
+Planned features include:
 
+A file system to manage chapters per manga
+
+An automated manga adder (for easy updates)
+
+A mobile-optimized UI version for on-the-go reading
+
+Note: “MangaView” is a temporary name—I'll probably rename it to Alexandria later, like the ancient library.
