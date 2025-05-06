@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MangaView</title>
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    
+    .manga-list {
+  display: grid;
+  grid-template-columns: repeat(3, 288px);
+  column-gap: 0.5rem; /* horizontal spacing */
+  row-gap: 0.1rem;    /* reduce vertical spacing */
+  justify-content: center;
+  padding: 1rem;
+}
+
+.manga-card {
+  width: 288px;  /* 240px * 1.2 */
+  height: 432px; /* 360px * 1.2 */
+  background-color: #f8f8f8;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.2s;
+}
+
+
+.manga-card:hover {
+  transform: translateY(-5px);
+}
+
+.manga-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* fill box without distortion */
+  border-radius: 8px;
+  display: block;
+}
+
+
+
+    .pagination {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .pagination button {
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .intro-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .intro-modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .intro-modal button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .intro-modal button:hover {
+      background-color: #0056b3;
+    }
+
+    .site-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #333;
+    }
+
+    .site-nav {
+      display: flex;
+      gap: 15px;
+      margin-left: 50px;
+    }
+
+    .site-nav a {
+      text-decoration: none;
+      color: white;
+      font-size: 1.2em;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-right: 20px;
+      margin-right: 10px;
+    }
+
+    .search-icon {
+      color: #8f8f8f;
+      font-size: 18px;
+      margin-right: 8px;
+      position: relative;
+      top: 2px;
+    }
+
+    .inputbox {
+      position: relative;
+      width: 300px;
+    }
+
+    .inputbox input {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      outline: none;
+      border: none;
+      color: #23242a;
+      font-size: 1em;
+      letter-spacing: 0.05em;
+      transition: 0.5s;
+      z-index: 10;
+    }
+
+    .inputbox span {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1em;
+      color: #8f8f8f;
+      pointer-events: none;
+      transition: 0.3s;
+    }
+
+    .inputbox input:valid ~ span,
+    .inputbox input:focus ~ span {
+      color: #45f3ff;
+      transform: translateX(10px) translateY(-24px);
+      font-size: 0.75em;
+    }
+
+    .inputbox i {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #45f3ff;
+      border-radius: 4px;
+      transition: 0.5s;
+      z-index: 9;
+    }
+
+    .inputbox input:valid ~ i,
+    .inputbox input:focus ~ i {
+      height: 44px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="logo">
+      <div class="book-icon">
+        <div class="left-page"></div>
+        <div class="right-page"></div>
+      </div>
+      <h1>MangaView</h1>
+    </div>
+    <nav class="site-nav">
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="browse.html">Browse</a></li>
+        <li><a href="latest.html">Latest</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <div class="inputbox">
+        <input required="required" type="text">
+        <span>Search</span>
+        <i></i>
+      </div>
+    </div>
+  </header>
+
+  <div id="introModal" class="intro-modal">
+    <div class="intro-modal-content">
+      <h2>Welcome to MangaView!</h2>
+      <p>Explore your favorite manga with ease and enjoy a seamless reading experience. Dive into the world of manga with us!</p>
+      <button id="closeModal">Close</button>
+    </div>
+  </div>
+
+  <main>
+    <section class="manga-list">
+      <div class="manga-card"><img src="assets/test_cover_1.jpg" alt="Manga Cover 1"></div>
+      <div class="manga-card"><img src="assets/test_cover_2.jpg" alt="Manga Cover 2"></div>
+      <div class="manga-card"><img src="assets/test_cover_3.jpg" alt="Manga Cover 3"></div>
+      <div class="manga-card"><img src="assets/test_cover_4.jpg" alt="Manga Cover 4"></div>
+      <div class="manga-card"><img src="assets/test_cover_5.jpg" alt="Manga Cover 5"></div>
+      <div class="manga-card"><img src="assets/test_cover_6.jpg" alt="Manga Cover 6"></div>
+      <div class="manga-card"><img src="assets/test_cover_7.jpg" alt="Manga Cover 7"></div>
+      <div class="manga-card"><img src="assets/test_cover_8.jpg" alt="Manga Cover 8"></div>
+      <div class="manga-card"><img src="assets/test_cover_9.jpg" alt="Manga Cover 9"></div>
+    </section>
+
+    <div class="pagination">
+      <button class="prev">Prev</button>
+      <span class="page-num">Page 1</span>
+      <button class="next">Next</button>
+    </div>
+
+    <div id="loginNoticeContainer"></div>
+  </main>
+
+  <script>
+    window.onload = function() {
+      if (!localStorage.getItem('introSeen')) {
+        document.getElementById('introModal').style.display = 'flex';
+      }
+    };
+
+    document.getElementById('closeModal').onclick = function() {
+      document.getElementById('introModal').style.display = 'none';
+      localStorage.setItem('introSeen', 'true');
+    };
+  </script>
+
+  <script src="JS/session.js"></script>
+</body>
+</html>

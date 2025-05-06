@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Header - MangaView</title>
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    .site-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      background-color: #333;
+      color: white;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      text-decoration: none;
+    }
+
+    .logo h1 {
+      font-size: 1.5em;
+      color: white;
+      margin: 0;
+    }
+
+    .book-icon {
+      position: relative;
+      width: 30px;
+      height: 30px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+
+    .book-icon .left-page,
+    .book-icon .right-page {
+      position: absolute;
+      width: 45%;
+      height: 100%;
+      background: #45f3ff;
+      border: 2px solid #fff;
+      border-radius: 2px;
+    }
+
+    .book-icon .left-page {
+      left: 0;
+      transform: skewY(-10deg);
+    }
+
+    .book-icon .right-page {
+      right: 0;
+      transform: skewY(10deg);
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    .site-nav {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .site-nav ul {
+      display: flex;
+      gap: 30px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .site-nav a {
+      text-decoration: none;
+      color: white;
+      font-size: 1.2em;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      color: #8f8f8f;
+      font-size: 18px;
+      margin-right: 8px;
+    }
+
+    .inputbox {
+      position: relative;
+      width: 300px;
+    }
+
+    .inputbox input {
+      width: 100%;
+      padding: 10px;
+      background: transparent;
+      outline: none;
+      border: none;
+      color: #fff;
+      font-size: 1em;
+      letter-spacing: 0.05em;
+      transition: 0.5s;
+      z-index: 10;
+    }
+
+    .inputbox span {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1em;
+      color: #8f8f8f;
+      pointer-events: none;
+      transition: 0.3s;
+    }
+
+    .inputbox input:valid ~ span,
+    .inputbox input:focus ~ span {
+      color: #45f3ff;
+      transform: translateX(10px) translateY(-24px);
+      font-size: 0.75em;
+    }
+
+    .inputbox i {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: #45f3ff;
+      border-radius: 4px;
+      transition: 0.5s;
+      z-index: 9;
+    }
+
+    .inputbox input:valid ~ i,
+    .inputbox input:focus ~ i {
+      height: 44px;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <a href="home.html" class="logo">
+      <div class="book-icon">
+        <div class="left-page"></div>
+        <div class="right-page"></div>
+      </div>
+      <h1>MangaView</h1>
+    </a>
+
+    <nav class="site-nav">
+      <ul>
+        <li><a href="home.html">Home</a></li>
+        <li><a href="browse.html">Browse</a></li>
+        <li><a href="latest.html">Latest</a></li>
+        <li><a href="login.html">Login</a></li>
+      </ul>
+    </nav>
+
+    <div class="search-box">
+      <i class="fas fa-search search-icon"></i>
+      <div class="inputbox">
+        <input required="required" type="text" />
+        <span>Search</span>
+        <i></i>
+      </div>
+    </div>
+  </header>
+</body>
+</html>

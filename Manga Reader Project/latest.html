@@ -1,0 +1,121 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MangaView - Latest Updates</title>
+
+  <!-- Main styles first -->
+  <link rel="stylesheet" href="CSS/styles.css" />
+
+  <!-- Logo-specific styles -->
+  <link rel="stylesheet" href="CSS/logo.css" />
+
+  <!-- Additional styles for revolving banner -->
+  <style>
+    .revolving-banner {
+      width: 100%;
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .banner-content {
+      display: flex;
+      animation: scrollBanner 20s linear infinite;
+    }
+
+    .banner-item {
+      padding: 0 20px;
+      white-space: nowrap;
+    }
+
+    @keyframes scrollBanner {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    .manga-list {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      padding: 20px;
+    }
+
+    .manga-card {
+      width: 30%;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    .manga-card img {
+      width: 100%;
+      height: auto;
+    }
+
+    .manga-title {
+      font-size: 1.2em;
+      margin-top: 10px;
+    }
+  </style>
+
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">
+        <div class="book-icon">
+          <div class="left-page"></div>
+          <div class="right-page"></div>
+        </div>
+        <h1>MangaView</h1>
+      </div>
+      <nav class="site-nav">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="browse.html">Browse</a></li>
+          <li><a href="latest.html">Latest</a></li>
+          <li><a href="login.html">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- Revolving Banner for Patch Notes -->
+    <section class="revolving-banner">
+      <div class="banner-content">
+        <div class="banner-item">Patch Note 1: New manga added to the library!</div>
+        <div class="banner-item">Patch Note 2: Fixed some bugs in the reader.</div>
+        <div class="banner-item">Patch Note 3: User interface improvements coming soon.</div>
+        <!-- Add more as needed -->
+      </div>
+    </section>
+
+    <!-- Latest Manga List -->
+    <section class="manga-list">
+      <article class="manga-card">
+        <img src="https://via.placeholder.com/150x200?text=Manga+1" alt="Manga 1 Cover" />
+        <h2 class="manga-title">Manga Title 1</h2>
+      </article>
+
+      <article class="manga-card">
+        <img src="https://via.placeholder.com/150x200?text=Manga+2" alt="Manga 2 Cover" />
+        <h2 class="manga-title">Manga Title 2</h2>
+      </article>
+
+      <article class="manga-card">
+        <img src="https://via.placeholder.com/150x200?text=Manga+3" alt="Manga 3 Cover" />
+        <h2 class="manga-title">Manga Title 3</h2>
+      </article>
+    </section>
+  </main>
+
+  <script src="JS/session.js"></script>
+
+</body>
+</html>

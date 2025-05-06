@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - MangaView</title>
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">
+        <div class="book-icon">
+          <div class="left-page"></div>
+          <div class="right-page"></div>
+        </div>
+        <h1>MangaView</h1>
+      </div>
+      <nav class="site-nav">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="browse.html">Browse</a></li>
+          <li><a href="latest.html">Latest</a></li>
+          <li>
+            <button id="auth-button" class="logout-btn">Login</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="login-section">
+      <div class="login-box">
+        <h2>Login to MangaView</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+          <button type="submit" class="login-button">Login</button>
+          <p class="register-link">Don't have an account? <a href="signup.html">Sign up</a></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const users = {
+      "Owner": { password: "Rovel", role: "admin" },
+      "User": { password: "1Test1", role: "user" },
+      "User1": { password: "GiveMeYourThoughts", role: "user" }
+    };
+
+    const loginForm = document.getElementById("login-form");
+    const authButton = document.getElementById("auth-button");
+
+    // Check for session
+    const loggedUser = localStorage.getItem("mangaViewUser");
+    const role = localStorage.getItem("mangaViewRole");
+
+    if (loggedUser && role) {
+      // If already logged in, redirect
+      if (role === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "browse.html";
+      }
+    }
+
+    // Login form logic
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      if (users[username] && users[username].password === password) {
+        localStorage.setItem("mangaViewUser", username);
+        localStorage.setItem("mangaViewRole", users[username].role);
+
+        if (users[username].role === "admin") {
+          window.location.href = "admin.html";
+        } else {
+          window.location.href = "browse.html";
+        }
+      } else {
+        alert("Invalid username or password.");
+      }
+    });
+
+    // Handle logout button dynamically
+    if (loggedUser) {
+      authButton.textContent = "Logout";
+      authButton.onclick = () => {
+        localStorage.removeItem("mangaViewUser");
+        localStorage.removeItem("mangaViewRole");
+        window.location.href = "login.html";
+      };
+    } else {
+      authButton.textContent = "Login";
+      authButton.onclick = () => window.location.href = "login.html";
+    }
+  </script>
+
+  <style>
+    .logout-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+  </style>
+
+<script src="JS/session.js"></script>
+
+</body>
+</html>

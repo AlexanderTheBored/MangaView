@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manga Reader</title>
+  <link rel="stylesheet" href="css/header.css" />
+</head>
+<body class="light-mode">
+  <header>
+    <h1>Manga Reader</h1>
+    <div>
+      <button onclick="toggleMode()">Toggle Reading Mode</button>
+      <button onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+  </header>
+  <main id="reader" style="padding: 2rem;">
+    <div id="scroll-mode" style="display: block;">
+      <img src="https://via.placeholder.com/800x1200?text=Page+1" alt="Page 1" style="width: 100%; max-width: 800px; margin-bottom: 1rem;" />
+      <img src="https://via.placeholder.com/800x1200?text=Page+2" alt="Page 2" style="width: 100%; max-width: 800px;" />
+    </div>
+    <div id="page-mode" style="display: none;">
+      <img id="paged-img" src="https://via.placeholder.com/800x1200?text=Page+1" alt="Paged View" style="width: 100%; max-width: 800px;" />
+      <div style="margin-top: 1rem;">
+        <button onclick="prevPage()">Prev</button>
+        <button onclick="nextPage()">Next</button>
+      </div>
+    </div>
+  </main>
+  <script src="js/reader.js"></script>
+</body>
+</html>
