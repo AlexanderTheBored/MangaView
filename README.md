@@ -1,4 +1,4 @@
-- 📖 About MangaView -
+-📖 About MangaView -
   
 MangaView is a personal project built to sharpen my front-end skills through real practice. It's a manga reading website—currently focused on UI/UX and browsing features—that will eventually evolve into a self-hosted personal manga library.
 
