@@ -1,0 +1,7 @@
+.manga-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1.5rem;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
