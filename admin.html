@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - MangaView</title>
+
+  <!-- Main styles -->
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+
+  <!-- TinyMCE with API Key - Version 7 -->
+  <script src="https://cdn.tiny.cloud/1/f6qtm2lkzmb31sa9l4mjaui4y2ongtkto3wuj605ay63fc6y/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+
+  <style>
+    .admin-dashboard h2,
+    .admin-dashboard p {
+      color: black;
+      background: none;
+      padding: 0.5rem 0;
+    }
+
+    .admin-tools button:first-child {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .admin-tools button:first-child:hover {
+      background-color: #0056b3;
+    }
+
+    .manga-form {
+      margin-top: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      max-width: 400px;
+      gap: 1rem;
+      background-color: #e8f0fe;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid #b6d4fe;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .manga-form input,
+    .manga-form button[type="submit"] {
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: white;
+    }
+
+    .manga-form button[type="submit"] {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .manga-form button[type="submit"]:hover {
+      background-color: #388e3c;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container">
+      <div class="logo">
+        <div class="book-icon">
+          <div class="left-page"></div>
+          <div class="right-page"></div>
+        </div>
+        <h1>MangaView Admin</h1>
+      </div>
+      <nav class="site-nav">
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="browse.html">Browse</a></li>
+          <li><a href="latest.html">Latest</a></li>
+          <li><a href="login.html">Logout</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="admin-dashboard">
+      <h2>Welcome, Admin!</h2>
+      <p>Use the tools below to manage MangaView:</p>
+
+      <div class="admin-tools">
+        <button onclick="toggleMangaForm()">Add New Manga</button>
+        <button disabled>Edit Manga (coming soon)</button>
+        <button disabled>Remove Manga (coming soon)</button>
+        <button disabled>View User Activity</button>
+        <button disabled>Manage Accounts</button>
+      </div>
+
+      <!-- Add Manga Form -->
+      <form id="mangaForm" class="manga-form" style="display: none;" onsubmit="addManga(event)">
+        <input type="text" id="mangaTitle" placeholder="Manga Title" required />
+        <input type="url" id="mangaImage" placeholder="Cover Image URL" required />
+        <button type="submit">Add Manga</button>
+      </form>
+
+      <!-- Manga Preview List -->
+      <section class="manga-list" id="adminMangaList"></section>
+
+      <!-- Text Editor -->
+      <div class="editor-container" id="editorContainer">
+        <textarea id="editor"></textarea>
+        <div class="editor-actions">
+          <button onclick="saveEditorContent()">💾 Save</button>
+          <button onclick="downloadEditorContent()">⬇️ Download</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Reset Intro Message Button -->
+  <button id="resetIntro">Reset Intro Message</button>
+
+  <script>
+    const form = document.getElementById("mangaForm");
+    const mangaList = document.getElementById("adminMangaList");
+
+    // Initialize TinyMCE
+    tinymce.init({
+      selector: "#editor",
+      plugins: [
+        'anchor', 'autolink', 'charmap', 'codesample', 'emoticons', 'image', 'link', 'lists', 'media',
+        'searchreplace', 'table', 'visualblocks', 'wordcount', 'checklist', 'mediaembed', 'casechange',
+        'formatpainter', 'pageembed', 'a11ychecker', 'tinymcespellchecker', 'permanentpen', 'powerpaste',
+        'advtable', 'advcode', 'editimage', 'advtemplate', 'ai', 'mentions', 'tinycomments', 'tableofcontents',
+        'footnotes', 'mergetags', 'autocorrect', 'typography', 'inlinecss', 'markdown', 'importword', 'exportword', 'exportpdf'
+      ],
+      toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat',
+      tinycomments_mode: 'embedded',
+      tinycomments_author: 'Author name',
+      mergetags_list: [
+        { value: 'First.Name', title: 'First Name' },
+        { value: 'Email', title: 'Email' },
+      ],
+      ai_request: (request, respondWith) => respondWith.string(() => Promise.reject('See docs to implement AI Assistant')),
+      setup: (editor) => {
+        editor.on("init", () => {
+          const savedContent = localStorage.getItem("adminEditorContent");
+          if (savedContent) editor.setContent(savedContent);
+        });
+      }
+    });
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const storedManga = JSON.parse(localStorage.getItem("mangaViewMangaList")) || [];
+      storedManga.forEach(({ title, img }) => createMangaCard(title, img));
+
+      document.getElementById("resetIntro").onclick = function () {
+        localStorage.removeItem("introSeen");
+        alert("Intro message has been reset. Reload the page to see it again.");
+      };
+    });
+
+    function toggleMangaForm() {
+      form.style.display = form.style.display === "none" ? "flex" : "none";
+    }
+
+    function addManga(event) {
+      event.preventDefault();
+      const title = document.getElementById("mangaTitle").value.trim();
+      const img = document.getElementById("mangaImage").value.trim();
+      if (!title || !img) return;
+
+      const current = JSON.parse(localStorage.getItem("mangaViewMangaList")) || [];
+      current.push({ title, img });
+      localStorage.setItem("mangaViewMangaList", JSON.stringify(current));
+
+      createMangaCard(title, img);
+      form.reset();
+    }
+
+    function createMangaCard(title, img) {
+      const card = document.createElement("article");
+      card.className = "manga-card";
+      card.innerHTML = `<img src="${img}" alt="${title}" /><h2 class="manga-title">${title}</h2>`;
+      mangaList.appendChild(card);
+    }
+
+    function saveEditorContent() {
+      const content = tinymce.get("editor").getContent();
+      localStorage.setItem("adminEditorContent", content);
+      alert("Editor content saved!");
+    }
+
+    function downloadEditorContent() {
+      const content = tinymce.get("editor").getContent();
+      const blob = new Blob([content], { type: "text/html" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "editor-content.html";
+      link.click();
+    }
+  </script>
+  
+<script src="JS/session.js"></script>
+
+</body>
+</html>

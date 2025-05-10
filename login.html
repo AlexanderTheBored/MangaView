@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - MangaView</title>
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+  <link rel="stylesheet" href="CSS/header.css" />
+</head>
+<body>
+
+  <!-- Reusable Header Container -->
+  <div id="header-container"></div>
+
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(data => document.getElementById("header-container").innerHTML = data);
+  </script>
+
+  <main>
+    <section class="login-section">
+      <div class="login-box">
+        <h2>Login to MangaView</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required />
+          </div>
+          <button type="submit" class="login-button">Login</button>
+          <p class="register-link">Don't have an account? <a href="signup.html">Sign up</a></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const loginForm = document.getElementById("login-form");
+
+    // Check if a user is already logged in via localStorage
+    const loggedUser = localStorage.getItem("mangaViewUser");
+    const role = localStorage.getItem("mangaViewRole");
+
+    if (loggedUser && role) {
+      if (role === "admin") {
+        window.location.href = "admin.html"; // Redirect to the admin page
+      } else {
+        window.location.href = "browse.html"; // Redirect to the browsing page
+      }
+    }
+
+    // Login form logic
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value;
+
+      // Send raw password and username to the server
+      fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Login failed");
+        return res.json();  // Parse the response JSON
+      })
+      .then(data => {
+        // Store the username and role in localStorage
+        localStorage.setItem("mangaViewUser", username);
+        localStorage.setItem("mangaViewRole", data.role);
+
+        // Redirect to the appropriate page based on role
+        if (data.role === "admin") {
+          window.location.href = "admin.html";  // Admin page
+        } else {
+          window.location.href = "browse.html"; // Browse page
+        }
+      })
+      .catch(() => {
+        // Handle failed login attempt
+        alert("Invalid username or password.");
+      });
+    });
+  </script>
+
+  <style>
+    .logout-btn {
+      background: none;
+      border: none;
+      color: inherit;
+      font: inherit;
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+    }
+  </style>
+
+  <script src="JS/session.js"></script>
+
+</body>
+</html>

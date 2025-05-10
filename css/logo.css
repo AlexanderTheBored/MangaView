@@ -1,0 +1,48 @@
+/* Logo Container */
+.logo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* Logo Text */
+.logo h1 {
+  margin: 0;
+  padding: 0;
+  margin-left: 10px;
+  color: #fff;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* Glow Effect on Hover */
+.logo h1:hover {
+  color: #ff6b6b;
+  text-shadow: 0 0 10px rgba(255, 105, 180, 0.7);
+}
+
+/* Book Icon Base */
+.book-icon {
+  width: 30px;
+  height: 30px;
+  background-color: #ff6b6b;
+  margin-right: 10px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Book Pages */
+.left-page,
+.right-page {
+  width: 6px;
+  height: 20px;
+  background-color: #fff;
+  margin: 0 1px;
+}

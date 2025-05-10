@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MangaView</title>
+
+  <!-- STYLES -->
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+  <link rel="stylesheet" href="CSS/header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    /* Styles for manga cards */
+    .manga-list {
+      display: grid;
+      grid-template-columns: repeat(3, 288px);
+      column-gap: 0.5rem;
+      row-gap: 0.1rem;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .manga-card {
+      width: 288px;
+      height: 432px;
+      background-color: #f8f8f8;
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: transform 0.2s;
+    }
+
+    .manga-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .manga-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      display: block;
+    }
+
+    .pagination {
+      text-align: center;
+      margin: 2rem 0;
+    }
+
+    .pagination button {
+      padding: 0.5rem 1rem;
+      margin: 0 0.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    /* Modal Styles */
+    .intro-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .intro-modal-content {
+      background-color: white;
+      padding: 2rem;
+      border-radius: 8px;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+    }
+
+    .intro-modal button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .intro-modal button:hover {
+      background-color: #0056b3;
+    }
+
+    /* Prevent manga grid from going behind sticky header */
+    .content {
+      padding-top: 120px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Reusable Header Container (dynamically loaded) -->
+  <div id="header-container"></div>
+  
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(data => document.getElementById("header-container").innerHTML = data);
+  </script>
+
+  <!-- Intro Modal -->
+  <div id="introModal" class="intro-modal">
+    <div class="intro-modal-content">
+      <h2>Welcome to MangaView!</h2>
+      <p>Explore your favorite manga with ease and enjoy a seamless reading experience. Dive into the world of manga with us!</p>
+      <button id="closeModal">Close</button>
+    </div>
+  </div>
+
+  <!-- Main Manga Section -->
+  <main class="content">
+    <section class="manga-list">
+      <div class="manga-card"><img src="assets/test_cover_1.jpg" alt="Manga Cover 1"></div>
+      <div class="manga-card"><img src="assets/test_cover_2.jpg" alt="Manga Cover 2"></div>
+      <div class="manga-card"><img src="assets/test_cover_3.jpg" alt="Manga Cover 3"></div>
+      <div class="manga-card"><img src="assets/test_cover_4.jpg" alt="Manga Cover 4"></div>
+      <div class="manga-card"><img src="assets/test_cover_5.jpg" alt="Manga Cover 5"></div>
+      <div class="manga-card"><img src="assets/test_cover_6.jpg" alt="Manga Cover 6"></div>
+      <div class="manga-card"><img src="assets/test_cover_7.jpg" alt="Manga Cover 7"></div>
+      <div class="manga-card"><img src="assets/test_cover_8.jpg" alt="Manga Cover 8"></div>
+      <div class="manga-card"><img src="assets/test_cover_9.jpg" alt="Manga Cover 9"></div>
+    </section>
+
+    <div class="pagination">
+      <button class="prev">Prev</button>
+      <span class="page-num">Page 1</span>
+      <button class="next">Next</button>
+    </div>
+
+    <div id="loginNoticeContainer"></div>
+  </main>
+
+  <!-- Intro Modal Logic -->
+  <script>
+    window.onload = function() {
+      if (!localStorage.getItem('introSeen')) {
+        document.getElementById('introModal').style.display = 'flex';
+      }
+    };
+
+    document.getElementById('closeModal').onclick = function() {
+      document.getElementById('introModal').style.display = 'none';
+      localStorage.setItem('introSeen', 'true');
+    };
+  </script>
+
+  <script src="JS/session.js"></script>
+
+</body>
+</html>

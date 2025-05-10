@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MangaView - Latest</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="CSS/styles.css" />
+  <link rel="stylesheet" href="CSS/logo.css" />
+  <link rel="stylesheet" href="CSS/header.css" />
+  <link rel="stylesheet" href="CSS/carousel.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- Header placeholder -->
+  <div id="header-container"></div>
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("header-container").outerHTML = data;
+      });
+  </script>
+
+  <main>
+    <!-- Carousel Section -->
+    <div class="carousel-container">
+      <button class="carousel-btn prev-button"><i class="fas fa-chevron-left"></i></button>
+      <div class="carousel-track" id="carousel-track">
+        <div class="manga-card"><img src="assets/test_cover_1.jpg" alt="Manga 1"></div>
+        <div class="manga-card"><img src="assets/test_cover_2.jpg" alt="Manga 2"></div>
+        <div class="manga-card"><img src="assets/test_cover_3.jpg" alt="Manga 3"></div>
+        <div class="manga-card"><img src="assets/test_cover_4.jpg" alt="Manga 4"></div>
+        <div class="manga-card"><img src="assets/test_cover_5.jpg" alt="Manga 5"></div>
+      </div>
+      <button class="carousel-btn next-button"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </main>
+
+  <script src="JS/session.js"></script>
+  <script src="JS/carousel.js"></script>
+</body>
+</html>

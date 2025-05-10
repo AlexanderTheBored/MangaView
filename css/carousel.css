@@ -1,0 +1,74 @@
+/* Carousel Container */
+.carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+/* Carousel Track */
+.carousel-track {
+  display: flex;
+  justify-content: center; /* Center covers */
+  align-items: center;
+  transition: transform 0.6s ease-in-out;
+  gap: 20px;
+}
+
+/* Manga Cards */
+.manga-card {
+  flex: 0 0 calc((100% - 40px) / 3); /* 3 cards visible with 20px gap */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+}
+
+.manga-card img {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  display: block;
+}
+
+/* Carousel Buttons */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  z-index: 10;
+  border-radius: 50%;
+}
+
+.prev-button {
+  left: 10px;
+}
+
+.next-button {
+  right: 10px;
+}
+
+.carousel-btn:hover {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Responsive Behavior */
+@media (max-width: 768px) {
+  .manga-card {
+    flex: 0 0 calc((100% - 20px) / 2); /* 2 visible */
+  }
+}
+
+@media (max-width: 480px) {
+  .manga-card {
+    flex: 0 0 100%; /* 1 visible */
+  }
+}

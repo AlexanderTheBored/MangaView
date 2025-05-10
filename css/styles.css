@@ -1,0 +1,412 @@
+/* -----------------------------------
+   Global Reset & Base Styles
+----------------------------------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* -----------------------------------
+   Header & Navigation
+----------------------------------- */
+.site-header {
+  background-color: #1e1e1e;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 1rem 0;
+}
+
+.site-header nav ul {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+}
+
+.site-header nav ul li {
+  margin: 0 15px;
+}
+
+.site-header nav ul li a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+}
+
+.site-header nav ul li a:hover {
+  color: #ff6b6b;
+  text-decoration: underline;
+  transform: scale(1.1);
+}
+
+/* -----------------------------------
+   Manga Grid Layout
+----------------------------------- */
+.manga-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 2rem;
+  justify-items: center;
+  margin-top: 2rem;
+}
+
+/* -----------------------------------
+   Manga Card Styling & Animation
+----------------------------------- */
+.manga-card {
+  width: 300px;
+  height: 450px;
+  perspective: 1000px;
+  margin: 1rem;
+  text-align: center;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.manga-card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.manga-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 1s;
+}
+
+.manga-card:hover .manga-card-inner {
+  transform: rotateY(180deg);
+}
+
+.manga-card-front,
+.manga-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+}
+
+.manga-card-front {
+  background-color: #fff;
+}
+
+.manga-card-back {
+  background-color: #f5f5f5;
+  transform: rotateY(180deg);
+}
+
+.manga-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.manga-title {
+  padding: 1rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+/* -----------------------------------
+   Pagination Controls
+----------------------------------- */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.pagination button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 0 10px;
+}
+
+.pagination button:hover {
+  background-color: #0056b3;
+}
+
+.pagination .page-num {
+  font-size: 16px;
+  margin: 0 10px;
+}
+
+/* -----------------------------------
+   Login Box Styling
+----------------------------------- */
+.login-section {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem 1rem;
+}
+
+.login-box {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.login-box h2 {
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.login-button {
+  display: block;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #1e1e1e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #ff6b6b;
+}
+
+.register-link {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+/* -----------------------------------
+   Admin Dashboard Styling
+----------------------------------- */
+.admin-dashboard {
+  padding: 2rem;
+  color: #fff;
+  text-align: center;
+}
+
+.admin-dashboard h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.admin-dashboard p {
+  margin-bottom: 2rem;
+  color: #ccc;
+}
+
+.admin-tools {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.admin-tools button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #4e4e4e;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.admin-tools button:hover {
+  background-color: #6a6a6a;
+  transform: translateY(-2px);
+}
+
+.admin-tools button:active {
+  transform: scale(0.98);
+  background-color: #333;
+}
+
+/* -----------------------------------
+   Login Notice Banner
+----------------------------------- */
+.login-notice {
+  background-color: #cce5ff;
+  color: #004085;
+  padding: 15px 20px;
+  margin-top: 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  border: 1px solid #b8daff;
+  text-align: center;
+  display: block;
+  width: 80%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.login-notice a {
+  color: #004085;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.login-notice a:hover {
+  text-decoration: underline;
+}
+
+/* -----------------------------------
+   Add Manga Form
+----------------------------------- */
+.add-manga-form {
+  max-width: 400px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.add-manga-form h2 {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.add-manga-form label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: bold;
+}
+
+.add-manga-form input[type="text"],
+.add-manga-form input[type="file"] {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.add-manga-form button {
+  display: block;
+  width: 100%;
+  margin-top: 1.5rem;
+  padding: 0.6rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.add-manga-form button:hover {
+  background-color: #0056b3;
+}
+
+/* -----------------------------------
+   Revolving Banner
+----------------------------------- */
+.revolving-banner {
+  width: 100%;
+  overflow: hidden;
+  background-color: #1e1e1e;
+  color: white;
+  padding: 1rem 0;
+  position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.banner-content {
+  display: flex;
+  width: max-content;
+  animation: scrollBanner 20s linear infinite;
+  white-space: nowrap;
+}
+
+.banner-item {
+  display: inline-block;
+  padding: 0 2rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #ffdd57;
+}
+
+@keyframes scrollBanner {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Extra content padding to prevent header overlap */
+.content {
+  padding-top: 120px;
+}
+
+/* Optional grid fallback class */
+.manga-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+/* Dark mode support */
+body.dark-mode .add-manga-form {
+  background-color: #222;
+  color: #fff;
+}
+
+body.dark-mode .add-manga-form input[type="text"],
+body.dark-mode .add-manga-form input[type="file"] {
+  background-color: #333;
+  border: 1px solid #555;
+  color: #fff;
+}
