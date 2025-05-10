@@ -14,5 +14,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlexanderTheBored/MangaView.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlexanderTheBored/MangaView/issues"
+  },
+  "homepage": "https://github.com/AlexanderTheBored/MangaView#readme",
   "description": ""
 }
