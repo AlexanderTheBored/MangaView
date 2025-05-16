@@ -17,16 +17,15 @@ app.use(session({
   saveUninitialized: true
 }));
 
-// In-memory "user database" with updated hash for "Rovel"
+// In-memory "user database" with updated hashes
 const users = {
-  "Owner": { password: "$2b$10$UeiFzUyOMj2EXoAvWBhP8OiiR74peSBxKrQTOOeF2RMZMMrAMJBDa", role: "admin" }, // Rovel
-  "User": { password: "$2b$10$2PfqvGiD7Vs.CTzES8Bz1l9oj/z7QFg7BwZz7HkpP0ZTdbwKklYFa", role: "user" }, // 1Test1
-  "User1": { password: "$2b$10$Z0HF4EuHPkWmEgTcEn7HuAlxhHqNN25FUkV09BdD5/e8Z8qT67sEC", role: "user" } // GiveMeYourThoughts
+  "Owner": { password: "$2b$10$UeiFzUyOMj2EXoAvWBhP8OiiR74peSBxKrQTOOeF2RMZMMrAMJBDa", role: "admin" },
+  "User": { password: "$2b$10$2PfqvGiD7Vs.CTzES8Bz1l9oj/z7QFg7BwZz7HkpP0ZTdbwKklYFa", role: "user" },
+  "User1": { password: "$2b$10$Z0HF4EuHPkWmEgTcEn7HuAlxhHqNN25FUkV09BdD5/e8Z8qT67sEC", role: "user" }
 };
 
-
 // Signup endpoint
-app.post('/signup', async (req, res) => {
+app.post('/mangaview/signup', async (req, res) => {
   const { username, password } = req.body;
 
   if (users[username]) {
@@ -39,7 +38,7 @@ app.post('/signup', async (req, res) => {
 });
 
 // Login endpoint
-app.post('/login', async (req, res) => {
+app.post('/mangaview/login', async (req, res) => {
   const { username, password } = req.body;
 
   const user = users[username];
@@ -54,22 +53,22 @@ app.post('/login', async (req, res) => {
 });
 
 // Logout endpoint
-app.post('/logout', (req, res) => {
+app.post('/mangaview/logout', (req, res) => {
   req.session.destroy(err => {
     if (err) return res.status(500).send('Logout failed');
     res.send('Logged out');
   });
 });
 
-// Serve static files from the project root
-app.use(express.static(path.join(__dirname)));
+// Serve static files under /mangaview
+app.use('/mangaview', express.static(path.join(__dirname)));
 
-// Default route serving home.html
-app.get('/', (req, res) => {
+// Serve home.html from /mangaview root
+app.get('/mangaview', (req, res) => {
   res.sendFile(path.join(__dirname, 'home.html'));
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}/mangaview`);
 });
