@@ -5,16 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>MangaView - Latest</title>
 
-  <!-- Stylesheets -->
-  <link rel="stylesheet" href="CSS/styles.css" />
-  <link rel="stylesheet" href="CSS/logo.css" />
-  <link rel="stylesheet" href="CSS/header.css" />
-  <link rel="stylesheet" href="CSS/carousel.css" />
+  <!-- Tailwind CSS with animation configuration -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          transitionDuration: {
+            '300': '300ms',
+          },
+          keyframes: {
+            slideIn: {
+              '0%': { transform: 'translateX(8px)', opacity: '0.9' },
+              '100%': { transform: 'translateX(0)', opacity: '1' },
+            }
+          },
+          animation: {
+            slideIn: 'slideIn 0.3s ease-out forwards',
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
-</head>
-<body>
 
-  <!-- Header placeholder -->
+  <style>
+    @media (max-width: 640px) {
+      #mobileSearchBar {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-white text-gray-900 min-h-screen">
+  <!-- Header Container -->
   <div id="header-container"></div>
   <script>
     fetch("header.html")
@@ -24,22 +49,360 @@
       });
   </script>
 
-  <main>
-    <!-- Carousel Section -->
-    <div class="carousel-container">
-      <button class="carousel-btn prev-button"><i class="fas fa-chevron-left"></i></button>
-      <div class="carousel-track" id="carousel-track">
-        <div class="manga-card"><img src="assets/test_cover_1.jpg" alt="Manga 1"></div>
-        <div class="manga-card"><img src="assets/test_cover_2.jpg" alt="Manga 2"></div>
-        <div class="manga-card"><img src="assets/test_cover_3.jpg" alt="Manga 3"></div>
-        <div class="manga-card"><img src="assets/test_cover_4.jpg" alt="Manga 4"></div>
-        <div class="manga-card"><img src="assets/test_cover_5.jpg" alt="Manga 5"></div>
-      </div>
-      <button class="carousel-btn next-button"><i class="fas fa-chevron-right"></i></button>
+  <!-- Mobile Search Bar -->
+  <div class="sm:hidden flex items-center justify-between px-4 py-2 bg-white border-b">
+    <button onclick="toggleMobileSearch()" class="text-gray-700">
+      <i class="fas fa-search text-lg"></i>
+    </button>
+    <div id="mobileSearchBar" class="flex w-full mt-2 gap-2">
+      <input
+        id="mobileSearchInput"
+        type="text"
+        placeholder="Search manga..."
+        class="flex-1 px-4 py-2 rounded border border-gray-300 text-sm"
+      />
+      <button onclick="performSearch()" class="px-3 py-2 bg-blue-500 text-white rounded text-sm">Go</button>
     </div>
+  </div>
+
+  <main class="pt-[120px] pb-12 px-4">
+    <!-- Carousel -->
+    <section class="relative w-full overflow-hidden mb-8">
+      <div class="flex transition-transform duration-300 gap-4 py-4" id="carousel-track">
+        <!-- Manga covers will be inserted here -->
+      </div>
+      <button class="prev-button absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition-all z-10">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="next-button absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full shadow flex items-center justify-center hover:bg-gray-100 transition-all z-10">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </section>
+
+    <!-- Manga Content Sections -->
+    <div class="max-w-7xl mx-auto px-4 py-8">
+      <!-- Trending Manga Section -->
+      <section class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold flex items-center">
+            <i class="fas fa-fire text-red-500 mr-3"></i>
+            Trending Now
+          </h2>
+          <a href="#" class="text-indigo-500 hover:text-indigo-700 text-sm font-medium">View All</a>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+          <!-- Manga Item 1 -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div class="relative">
+              <img src="https://via.placeholder.com/200x300" alt="Jujutsu Kaisen" class="w-full h-64 object-cover">
+              <span class="absolute top-2 left-2 bg-indigo-500 text-white text-xs px-2 py-1 rounded">NEW</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1 truncate">Jujutsu Kaisen</h3>
+              <div class="flex items-center text-yellow-400 mb-2">
+                <i class="fas fa-star"></i>
+                <span class="text-gray-600 ml-1 text-sm">4.9</span>
+              </div>
+              <span class="text-sm text-gray-500">Chapter 215</span>
+            </div>
+          </div>
+          
+          <!-- Manga Item 2 -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <img src="https://via.placeholder.com/200x300" alt="One Piece" class="w-full h-64 object-cover">
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1 truncate">One Piece</h3>
+              <div class="flex items-center text-yellow-400 mb-2">
+                <i class="fas fa-star"></i>
+                <span class="text-gray-600 ml-1 text-sm">4.8</span>
+              </div>
+              <span class="text-sm text-gray-500">Chapter 1087</span>
+            </div>
+          </div>
+          
+          <!-- Manga Item 3 -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <div class="relative">
+              <img src="https://via.placeholder.com/200x300" alt="Chainsaw Man" class="w-full h-64 object-cover">
+              <span class="absolute top-2 left-2 bg-indigo-500 text-white text-xs px-2 py-1 rounded">HOT</span>
+            </div>
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1 truncate">Chainsaw Man</h3>
+              <div class="flex items-center text-yellow-400 mb-2">
+                <i class="fas fa-star"></i>
+                <span class="text-gray-600 ml-1 text-sm">4.7</span>
+              </div>
+              <span class="text-sm text-gray-500">Chapter 127</span>
+            </div>
+          </div>
+          
+          <!-- Manga Item 4 -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <img src="https://via.placeholder.com/200x300" alt="My Hero Academia" class="w-full h-64 object-cover">
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1 truncate">My Hero Academia</h3>
+              <div class="flex items-center text-yellow-400 mb-2">
+                <i class="fas fa-star"></i>
+                <span class="text-gray-600 ml-1 text-sm">4.6</span>
+              </div>
+              <span class="text-sm text-gray-500">Chapter 389</span>
+            </div>
+          </div>
+          
+          <!-- Manga Item 5 -->
+          <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+            <img src="https://via.placeholder.com/200x300" alt="Demon Slayer" class="w-full h-64 object-cover">
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1 truncate">Demon Slayer</h3>
+              <div class="flex items-center text-yellow-400 mb-2">
+                <i class="fas fa-star"></i>
+                <span class="text-gray-600 ml-1 text-sm">4.9</span>
+              </div>
+              <span class="text-sm text-gray-500">Chapter 205</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Latest Updates Section -->
+      <section class="mb-12">
+        <div class="flex items-center justify-between mb-6">
+          <h2 class="text-2xl font-bold flex items-center">
+            <i class="fas fa-clock text-blue-500 mr-3"></i>
+            Latest Updates
+          </h2>
+          <a href="#" class="text-indigo-500 hover:text-indigo-700 text-sm font-medium">View All</a>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <!-- Update Item 1 -->
+          <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition flex items-center">
+            <img src="https://via.placeholder.com/80x120" alt="One Piece" class="w-12 h-16 object-cover rounded">
+            <div class="ml-4 flex-1">
+              <h3 class="font-medium">One Piece</h3>
+              <p class="text-sm text-gray-600">Chapter 1087 - The Legendary Battle Begins</p>
+              <div class="flex items-center mt-1">
+                <span class="text-xs text-gray-500">2 hours ago</span>
+                <span class="mx-2 text-gray-300">•</span>
+                <span class="text-xs text-indigo-500">Shounen</span>
+              </div>
+            </div>
+            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+              Read
+            </button>
+          </div>
+          
+          <!-- Update Item 2 -->
+          <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition flex items-center">
+            <img src="https://via.placeholder.com/80x120" alt="Jujutsu Kaisen" class="w-12 h-16 object-cover rounded">
+            <div class="ml-4 flex-1">
+              <h3 class="font-medium">Jujutsu Kaisen</h3>
+              <p class="text-sm text-gray-600">Chapter 215 - The Decisive Battle</p>
+              <div class="flex items-center mt-1">
+                <span class="text-xs text-gray-500">5 hours ago</span>
+                <span class="mx-2 text-gray-300">•</span>
+                <span class="text-xs text-indigo-500">Supernatural</span>
+              </div>
+            </div>
+            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+              Read
+            </button>
+          </div>
+          
+          <!-- Update Item 3 -->
+          <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition flex items-center">
+            <img src="https://via.placeholder.com/80x120" alt="Chainsaw Man" class="w-12 h-16 object-cover rounded">
+            <div class="ml-4 flex-1">
+              <h3 class="font-medium">Chainsaw Man</h3>
+              <p class="text-sm text-gray-600">Chapter 127 - New Arc Begins</p>
+              <div class="flex items-center mt-1">
+                <span class="text-xs text-gray-500">1 day ago</span>
+                <span class="mx-2 text-gray-300">•</span>
+                <span class="text-xs text-indigo-500">Action</span>
+              </div>
+            </div>
+            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+              Read
+            </button>
+          </div>
+          
+          <!-- Update Item 4 -->
+          <div class="p-4 hover:bg-gray-50 transition flex items-center">
+            <img src="https://via.placeholder.com/80x120" alt="Spy x Family" class="w-12 h-16 object-cover rounded">
+            <div class="ml-4 flex-1">
+              <h3 class="font-medium">Spy x Family</h3>
+              <p class="text-sm text-gray-600">Chapter 78 - Family Secrets</p>
+              <div class="flex items-center mt-1">
+                <span class="text-xs text-gray-500">2 days ago</span>
+                <span class="mx-2 text-gray-300">•</span>
+                <span class="text-xs text-indigo-500">Comedy</span>
+              </div>
+            </div>
+            <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+              Read
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Genres Section -->
+      <section>
+        <h2 class="text-2xl font-bold mb-6">Browse Genres</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <a href="#" class="genre-card bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+            Action
+          </a>
+          <a href="#" class="genre-card bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+            Romance
+          </a>
+          <a href="#" class="genre-card bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+            Adventure
+          </a>
+          <a href="#" class="genre-card bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+            Fantasy
+          </a>
+          <a href="#" class="genre-card bg-gradient-to-r from-yellow-500 to-amber-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+            Comedy
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <!-- Manga Grid -->
+    <section class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4" id="manga-grid">
+      <!-- Additional manga covers will load here -->
+    </section>
   </main>
 
-  <script src="JS/session.js"></script>
-  <script src="JS/carousel.js"></script>
+  <script>
+    function toggleMobileSearch() {
+      const bar = document.getElementById("mobileSearchBar");
+      bar.style.display = bar.style.display === "flex" ? "none" : "flex";
+    }
+
+    function performSearch() {
+      const query = document.getElementById("mobileSearchInput").value.trim();
+      if (query) alert(`Searching for: ${query}`);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const AUTO_SCROLL_DELAY = 1500;
+      const ITEM_ANIMATION_DELAY = 100;
+
+      const availableCovers = await findAvailableCovers();
+      if (availableCovers.length === 0) showPlaceholder();
+
+      const carouselCount = window.innerWidth > 640 ? 5 : 3;
+      loadCarousel(availableCovers.slice(0, carouselCount));
+      loadGrid(availableCovers.slice(carouselCount));
+
+      async function findAvailableCovers() {
+        const available = [];
+        for (let i = 1; i <= 50; i++) {
+          if (await checkImageExists(`assets/test_cover_${i}.jpg`)) {
+            available.push(i);
+          }
+        }
+        return available.sort((a, b) => b - a);
+      }
+
+      function checkImageExists(url) {
+        return new Promise(resolve => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = url;
+        });
+      }
+
+      function showPlaceholder() {
+        document.getElementById('carousel-track').innerHTML = `
+          <div class="w-full text-center py-12 text-gray-500">
+            No manga covers found
+          </div>
+        `;
+      }
+
+      function loadCarousel(covers) {
+        const track = document.getElementById("carousel-track");
+        track.innerHTML = '';
+        covers.forEach((coverId, index) => {
+          const slide = document.createElement('div');
+          slide.className = `flex-shrink-0 w-[calc(20%-1rem)] sm:w-[calc(33.33%-1rem)] aspect-[2/3] bg-gray-100 rounded-lg overflow-hidden shadow hover:shadow-lg transition-all animate-slideIn`;
+          slide.style.animationDelay = `${index * ITEM_ANIMATION_DELAY}ms`;
+
+          const img = document.createElement('img');
+          img.src = `assets/test_cover_${coverId}.jpg`;
+          img.className = 'w-full h-full object-cover transition-transform duration-300 hover:scale-105';
+          img.onerror = () => img.src = 'assets/placeholder_cover.jpg';
+
+          slide.appendChild(img);
+          track.appendChild(slide);
+        });
+
+        initCarousel(track, covers.length);
+      }
+
+      function loadGrid(covers) {
+        const grid = document.getElementById("manga-grid");
+        grid.innerHTML = '';
+        covers.forEach(coverId => {
+          const card = document.createElement('div');
+          card.className = 'aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:shadow-lg transition-all hover:-translate-y-1';
+
+          const img = document.createElement('img');
+          img.src = `assets/test_cover_${coverId}.jpg`;
+          img.className = 'w-full h-full object-cover transition-transform duration-300 hover:scale-105';
+          img.loading = 'lazy';
+          img.onerror = () => img.src = 'assets/placeholder_cover.jpg';
+
+          card.appendChild(img);
+          grid.appendChild(card);
+        });
+      }
+
+      function initCarousel(track, itemCount) {
+        if (itemCount <= 1) return;
+
+        const items = Array.from(track.children);
+        const itemWidth = items[0].offsetWidth + 16;
+        let currentIndex = 0;
+        let autoScrollInterval;
+
+        items.forEach(item => track.appendChild(item.cloneNode(true)));
+
+        function updatePosition() {
+          track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+        }
+
+        function nextSlide() {
+          currentIndex = (currentIndex + 1) % itemCount;
+          updatePosition();
+        }
+
+        document.querySelector('.next-button').addEventListener('click', () => {
+          nextSlide();
+          resetAutoScroll();
+        });
+
+        document.querySelector('.prev-button').addEventListener('click', () => {
+          currentIndex = (currentIndex - 1 + itemCount) % itemCount;
+          updatePosition();
+          resetAutoScroll();
+        });
+
+        function resetAutoScroll() {
+          clearInterval(autoScrollInterval);
+          autoScrollInterval = setInterval(nextSlide, AUTO_SCROLL_DELAY);
+        }
+
+        track.addEventListener('mouseenter', () => clearInterval(autoScrollInterval));
+        track.addEventListener('mouseleave', resetAutoScroll);
+
+        resetAutoScroll();
+      }
+    });
+  </script>
 </body>
 </html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MangaView</title>
+
+  <!-- Tailwind CSS -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    .book {
+      position: relative;
+      width: 36px;
+      height: 48px;
+      perspective: 600px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .book-cover {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #8b5cf6, #6366f1);
+      border-radius: 2px 5px 5px 2px;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      transform: rotateY(-20deg);
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.4s ease;
+    }
+
+    .book-cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      background: #4f46e5;
+      transform: rotateY(90deg) translateX(6px);
+    }
+
+    .book-cover::after {
+      content: 'MANGA';
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      color: white;
+      font-size: 6px;
+      font-weight: bold;
+      transform: rotateZ(90deg) translateY(6px);
+      transform-origin: right bottom;
+    }
+
+    .book-spine {
+      position: absolute;
+      width: 6px;
+      height: 100%;
+      background: #4f46e5;
+      left: 0;
+      transform: rotateY(90deg) translateX(-6px);
+    }
+
+    .book:hover .book-cover {
+      transform: rotateY(-35deg);
+    }
+
+    .book-pages {
+      position: absolute;
+      width: 96%;
+      height: 96%;
+      top: 2%;
+      left: 2%;
+      background: white;
+      border-radius: 1px 4px 4px 1px;
+      overflow: hidden;
+    }
+
+    .book-pages::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(white, white 3px, #f3f4f6 3px, #f3f4f6 6px);
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #2a2a2a;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+      border-radius: 4px;
+      right: 0;
+    }
+
+    .dropdown-content a {
+      color: white;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #3a3a3a;
+      color: #a78bfa;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .mobile-search-container {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #2a2a2a;
+      padding: 12px;
+      z-index: 50;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-search-container.active {
+      display: block;
+    }
+  </style>
+
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+  <!-- Header -->
+
+  <header class="bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] text-white shadow-lg py-3 px-4 fixed top-0 left-0 w-full z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+        <div class="book">
+          <div class="book-cover">
+            <div class="book-spine"></div>
+            <div class="book-pages"></div>
+          </div>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-semibold tracking-wide bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
+          MangaView
+        </h1>
+      </a>
+
+```
+  <!-- Desktop Nav -->
+  <nav class="hidden md:flex items-center space-x-6">
+    <ul class="flex space-x-6 text-sm font-medium">
+      <li><a href="index.html" class="hover:text-indigo-300 transition">Home</a></li>
+      <li><a href="browse.html" class="hover:text-indigo-300 transition">Browse</a></li>
+      <li><a href="latest.html" class="hover:text-indigo-300 transition">Latest</a></li>
+      <li><a href="login.html" class="hover:text-indigo-300 transition">Login</a></li>
+    </ul>
+    <form class="relative w-40 lg:w-56">
+      <input
+        type="text"
+        name="q"
+        placeholder="Search"
+        class="bg-gray-700 text-sm text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400 pr-10 shadow-inner w-full"
+        required
+      />
+      <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white">
+        <i class="fas fa-search"></i>
+      </button>
+    </form>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="flex md:hidden items-center space-x-4">
+    <button id="mobile-search-btn" class="text-white focus:outline-none">
+      <i class="fas fa-search"></i>
+    </button>
+    <div class="dropdown">
+      <button class="text-white focus:outline-none">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <div class="dropdown-content">
+        <a href="index.html">Home</a>
+        <a href="browse.html">Browse</a>
+        <a href="latest.html">Latest</a>
+        <a href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Search Container -->
+<div id="mobile-search-container" class="mobile-search-container">
+  <form class="relative">
+    <input
+      type="text"
+      name="q"
+      placeholder="Search manga..."
+      class="bg-gray-700 text-sm text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full"
+      required
+    />
+    <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white">
+      <i class="fas fa-search"></i>
+    </button>
+  </form>
+</div>
+```
+
+  </header>
+
+  <!-- Add spacing below header -->
+
+  <div class="pt-24"></div>
+
+  <!-- ✅ YOUR CAROUSEL SECTION GOES HERE -->
+
+  <main class="max-w-7xl mx-auto px-4">
+    <!-- Insert your carousel HTML code here -->
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileSearchBtn = document.getElementById('mobile-search-btn');
+      const mobileSearchContainer = document.getElementById('mobile-search-container');
+
+      mobileSearchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        mobileSearchContainer.classList.toggle('active');
+
+        if (mobileSearchContainer.classList.contains('active')) {
+          setTimeout(() => {
+            mobileSearchContainer.querySelector('input').focus();
+          }, 50);
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!mobileSearchContainer.contains(e.target) && e.target !== mobileSearchBtn) {
+          mobileSearchContainer.classList.remove('active');
+        }
+      });
+
+      mobileSearchContainer.querySelector('form').addEventListener('submit', () => {
+        mobileSearchContainer.classList.remove('active');
+      });
+    });
+  </script>
+
+</body>
+</html>

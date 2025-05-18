@@ -1,19 +1,22 @@
 {
+  "name": "manga-reader-project",
+  "version": "1.0.0",
+  "description": "> *Thinking of renaming this to “Alexandria” — like the ancient library, but with less fire and way more manga.*",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build:css": "npx tailwindcss -i ./src/input.css -o ./public/dist/tailwind.css --minify"
+  },
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.1",
     "express": "^5.1.0",
     "express-session": "^1.18.1"
   },
-  "name": "manga-reader-project",
-  "version": "1.0.0",
-  "main": "server.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AlexanderTheBored/MangaView.git"
@@ -22,8 +25,5 @@
     "url": "https://github.com/AlexanderTheBored/MangaView/issues"
   },
   "homepage": "https://github.com/AlexanderTheBored/MangaView#readme",
-  "devDependencies": {
-    "tailwindcss": "^4.1.7"
-  },
-  "description": ""
+  "keywords": []
 }

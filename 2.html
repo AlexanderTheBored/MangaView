@@ -1,0 +1,698 @@
+
+
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MangaView</title>
+
+  <!-- Tailwind CSS -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    .book {
+      position: relative;
+      width: 36px;
+      height: 48px;
+      perspective: 600px;
+      margin-right: 12px;
+      flex-shrink: 0;
+    }
+
+    .book-cover {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, #8b5cf6, #6366f1);
+      border-radius: 2px 5px 5px 2px;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      transform: rotateY(-20deg);
+      box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+      transition: transform 0.4s ease;
+    }
+
+    .book-cover::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      height: 100%;
+      background: #4f46e5;
+      transform: rotateY(90deg) translateX(6px);
+    }
+
+    .book-cover::after {
+      content: 'MANGA';
+      position: absolute;
+      bottom: 6px;
+      right: 6px;
+      color: white;
+      font-size: 6px;
+      font-weight: bold;
+      transform: rotateZ(90deg) translateY(6px);
+      transform-origin: right bottom;
+    }
+
+    .book-spine {
+      position: absolute;
+      width: 6px;
+      height: 100%;
+      background: #4f46e5;
+      left: 0;
+      transform: rotateY(90deg) translateX(-6px);
+    }
+
+    .book:hover .book-cover {
+      transform: rotateY(-35deg);
+    }
+
+    .book-pages {
+      position: absolute;
+      width: 96%;
+      height: 96%;
+      top: 2%;
+      left: 2%;
+      background: white;
+      border-radius: 1px 4px 4px 1px;
+      overflow: hidden;
+    }
+
+    .book-pages::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(white, white 3px, #f3f4f6 3px, #f3f4f6 6px);
+    }
+
+    .dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #2a2a2a;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+      z-index: 1;
+      border-radius: 4px;
+      right: 0;
+    }
+
+    .dropdown-content a {
+      color: white;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #3a3a3a;
+      color: #a78bfa;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .mobile-search-container {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background-color: #2a2a2a;
+      padding: 12px;
+      z-index: 50;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .mobile-search-container.active {
+      display: block;
+    }
+
+    /* Carousel Styles */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.5s forwards;
+    }
+    #carousel-track {
+      transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  </style>
+
+</head>
+<body class="bg-gray-100 text-gray-900">
+
+  <!-- Header -->
+
+  <header class="bg-gradient-to-r from-[#1a1a1a] to-[#2a2a2a] text-white shadow-lg py-3 px-4 fixed top-0 left-0 w-full z-50">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <!-- Logo -->
+      <a href="index.html" class="flex items-center space-x-2 hover:opacity-90 transition-opacity">
+        <div class="book">
+          <div class="book-cover">
+            <div class="book-spine"></div>
+            <div class="book-pages"></div>
+          </div>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-semibold tracking-wide bg-gradient-to-r from-purple-400 to-indigo-300 bg-clip-text text-transparent">
+          MangaView
+        </h1>
+      </a>
+
+```
+  <!-- Desktop Nav -->
+  <nav class="hidden md:flex items-center space-x-6">
+    <ul class="flex space-x-6 text-sm font-medium">
+      <li><a href="index.html" class="hover:text-indigo-300 transition">Home</a></li>
+      <li><a href="browse.html" class="hover:text-indigo-300 transition">Browse</a></li>
+      <li><a href="latest.html" class="hover:text-indigo-300 transition">Latest</a></li>
+      <li><a href="login.html" class="hover:text-indigo-300 transition">Login</a></li>
+    </ul>
+    <form class="relative w-40 lg:w-56">
+      <input
+        type="text"
+        name="q"
+        placeholder="Search"
+        class="bg-gray-700 text-sm text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400 pr-10 shadow-inner w-full"
+        required
+      />
+      <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white">
+        <i class="fas fa-search"></i>
+      </button>
+    </form>
+  </nav>
+
+  <!-- Mobile Nav -->
+  <div class="flex md:hidden items-center space-x-4">
+    <button id="mobile-search-btn" class="text-white focus:outline-none">
+      <i class="fas fa-search"></i>
+    </button>
+    <div class="dropdown">
+      <button class="text-white focus:outline-none">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <div class="dropdown-content">
+        <a href="index.html">Home</a>
+        <a href="browse.html">Browse</a>
+        <a href="latest.html">Latest</a>
+        <a href="login.html">Login</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mobile Search Container -->
+<div id="mobile-search-container" class="mobile-search-container">
+  <form class="relative">
+    <input
+      type="text"
+      name="q"
+      placeholder="Search manga..."
+      class="bg-gray-700 text-sm text-white px-4 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full"
+      required
+    />
+    <button type="submit" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-300 hover:text-white">
+      <i class="fas fa-search"></i>
+    </button>
+  </form>
+</div>
+```
+
+  </header>
+
+  <!-- Add spacing below header -->
+
+  <div class="pt-24"></div>
+
+  <!-- Carousel Section -->
+
+  <section class="py-12 px-4">
+    <div class="relative max-w-7xl mx-auto">
+      <!-- Navigation buttons -->
+      <button class="prev-button absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 transition">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+
+```
+  <div class="overflow-hidden px-12">
+    <div id="carousel-track" class="flex gap-6 w-full"></div>
+  </div>
+  
+  <button class="next-button absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black bg-opacity-50 text-white p-3 rounded-full hover:bg-opacity-75 transition">
+    <i class="fas fa-chevron-right"></i>
+  </button>
+</div>
+```
+
+  </section>
+
+  <!-- Manga Content Sections -->
+
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Trending Manga Section -->
+    <section class="mb-12">
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-2xl font-bold flex items-center">
+          <i class="fas fa-fire text-red-500 mr-3"></i>
+          Trending Now
+        </h2>
+        <a href="#" class="text-indigo-500 hover:text-indigo-700 text-sm font-medium">View All</a>
+      </div>
+
+```
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
+    <!-- Manga Item 1 -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x300" alt="Jujutsu Kaisen" class="w-full h-64 object-cover">
+        <span class="absolute top-2 left-2 bg-indigo-500 text-white text-xs px-2 py-1 rounded">NEW</span>
+      </div>
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1 truncate">Jujutsu Kaisen</h3>
+        <div class="flex items-center text-yellow-400 mb-2">
+          <i class="fas fa-star"></i>
+          <span class="text-gray-600 ml-1 text-sm">4.9</span>
+        </div>
+        <span class="text-sm text-gray-500">Chapter 215</span>
+      </div>
+    </div>
+    
+    <!-- Manga Item 2 -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <img src="https://via.placeholder.com/200x300" alt="One Piece" class="w-full h-64 object-cover">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1 truncate">One Piece</h3>
+        <div class="flex items-center text-yellow-400 mb-2">
+          <i class="fas fa-star"></i>
+          <span class="text-gray-600 ml-1 text-sm">4.8</span>
+        </div>
+        <span class="text-sm text-gray-500">Chapter 1087</span>
+      </div>
+    </div>
+    
+    <!-- Manga Item 3 -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <div class="relative">
+        <img src="https://via.placeholder.com/200x300" alt="Chainsaw Man" class="w-full h-64 object-cover">
+        <span class="absolute top-2 left-2 bg-indigo-500 text-white text-xs px-2 py-1 rounded">HOT</span>
+      </div>
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1 truncate">Chainsaw Man</h3>
+        <div class="flex items-center text-yellow-400 mb-2">
+          <i class="fas fa-star"></i>
+          <span class="text-gray-600 ml-1 text-sm">4.7</span>
+        </div>
+        <span class="text-sm text-gray-500">Chapter 127</span>
+      </div>
+    </div>
+    
+    <!-- Manga Item 4 -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <img src="https://via.placeholder.com/200x300" alt="My Hero Academia" class="w-full h-64 object-cover">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1 truncate">My Hero Academia</h3>
+        <div class="flex items-center text-yellow-400 mb-2">
+          <i class="fas fa-star"></i>
+          <span class="text-gray-600 ml-1 text-sm">4.6</span>
+        </div>
+        <span class="text-sm text-gray-500">Chapter 389</span>
+      </div>
+    </div>
+    
+    <!-- Manga Item 5 -->
+    <div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+      <img src="https://via.placeholder.com/200x300" alt="Demon Slayer" class="w-full h-64 object-cover">
+      <div class="p-4">
+        <h3 class="font-semibold text-lg mb-1 truncate">Demon Slayer</h3>
+        <div class="flex items-center text-yellow-400 mb-2">
+          <i class="fas fa-star"></i>
+          <span class="text-gray-600 ml-1 text-sm">4.9</span>
+        </div>
+        <span class="text-sm text-gray-500">Chapter 205</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Latest Updates Section -->
+<section class="mb-12">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold flex items-center">
+      <i class="fas fa-clock text-blue-500 mr-3"></i>
+      Latest Updates
+    </h2>
+    <a href="#" class="text-indigo-500 hover:text-indigo-700 text-sm font-medium">View All</a>
+  </div>
+  
+  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <!-- Update Item 1 -->
+    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition flex items-center">
+      <img src="https://via.placeholder.com/80x120" alt="One Piece" class="w-12 h-16 object-cover rounded">
+      <div class="ml-4 flex-1">
+        <h3 class="font-medium">One Piece</h3>
+        <p class="text-sm text-gray-600">Chapter 1087 - The Legendary Battle Begins</p>
+        <div class="flex items-center mt-1">
+          <span class="text-xs text-gray-500">2 hours ago</span>
+          <span class="mx-2 text-gray-300">•</span>
+          <span class="text-xs text-indigo-500">Shounen</span>
+        </div>
+      </div>
+      <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+        Read
+      </button>
+    </div>
+    
+    <!-- Update Item 2 -->
+    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition flex items-center">
+      <img src="https://via.placeholder.com/80x120" alt="Jujutsu Kaisen" class="w-12 h-16 object-cover rounded">
+      <div class="ml-4 flex-1">
+        <h3 class="font-medium">Jujutsu Kaisen</h3>
+        <p class="text-sm text-gray-600">Chapter 215 - The Decisive Battle</p>
+        <div class="flex items-center mt-1">
+          <span class="text-xs text-gray-500">5 hours ago</span>
+          <span class="mx-2 text-gray-300">•</span>
+          <span class="text-xs text-indigo-500">Supernatural</span>
+        </div>
+      </div>
+      <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+        Read
+      </button>
+    </div>
+    
+    <!-- Update Item 3 -->
+    <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition flex items-center">
+      <img src="https://via.placeholder.com/80x120" alt="Chainsaw Man" class="w-12 h-16 object-cover rounded">
+      <div class="ml-4 flex-1">
+        <h3 class="font-medium">Chainsaw Man</h3>
+        <p class="text-sm text-gray-600">Chapter 127 - New Arc Begins</p>
+        <div class="flex items-center mt-1">
+          <span class="text-xs text-gray-500">1 day ago</span>
+          <span class="mx-2 text-gray-300">•</span>
+          <span class="text-xs text-indigo-500">Action</span>
+        </div>
+      </div>
+      <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+        Read
+      </button>
+    </div>
+    
+    <!-- Update Item 4 -->
+    <div class="p-4 hover:bg-gray-50 transition flex items-center">
+      <img src="https://via.placeholder.com/80x120" alt="Spy x Family" class="w-12 h-16 object-cover rounded">
+      <div class="ml-4 flex-1">
+        <h3 class="font-medium">Spy x Family</h3>
+        <p class="text-sm text-gray-600">Chapter 78 - Family Secrets</p>
+        <div class="flex items-center mt-1">
+          <span class="text-xs text-gray-500">2 days ago</span>
+          <span class="mx-2 text-gray-300">•</span>
+          <span class="text-xs text-indigo-500">Comedy</span>
+        </div>
+      </div>
+      <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-3 py-1 rounded text-sm transition">
+        Read
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Genres Section -->
+<section>
+  <h2 class="text-2xl font-bold mb-6">Browse Genres</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <a href="#" class="genre-card bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+      Action
+    </a>
+    <a href="#" class="genre-card bg-gradient-to-r from-red-500 to-pink-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+      Romance
+    </a>
+    <a href="#" class="genre-card bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+      Adventure
+    </a>
+    <a href="#" class="genre-card bg-gradient-to-r from-green-500 to-emerald-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+      Fantasy
+    </a>
+    <a href="#" class="genre-card bg-gradient-to-r from-yellow-500 to-amber-500 text-white p-6 rounded-lg text-center font-medium hover:shadow-lg transition transform hover:-translate-y-1">
+      Comedy
+    </a>
+  </div>
+</section>
+```
+
+  </main>
+
+  <!-- Footer -->
+
+  <footer class="bg-gray-800 text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between">
+        <div class="mb-6 md:mb-0">
+          <div class="flex items-center mb-4">
+            <div class="book mr-3">
+              <div class="book-cover">
+                <div class="book-spine"></div>
+                <div class="book-pages"></div>
+              </div>
+            </div>
+            <h2 class="text-xl font-bold">MangaView</h2>
+          </div>
+          <p class="text-gray-400">Your ultimate manga reading experience.</p>
+        </div>
+        <div class="grid grid-cols-2 gap-8 sm:grid-cols-3">
+          <div>
+            <h3 class="font-semibold mb-4">Navigation</h3>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Home</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Browse</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Latest</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Popular</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-4">Legal</h3>
+            <ul class="space-y-2">
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a></li>
+              <li><a href="#" class="text-gray-400 hover:text-white transition">DMCA</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="font-semibold mb-4">Connect</h3>
+            <div class="flex space-x-4">
+              <a href="#" class="text-gray-400 hover:text-white transition text-xl"><i class="fab fa-twitter"></i></a>
+              <a href="#" class="text-gray-400 hover:text-white transition text-xl"><i class="fab fa-discord"></i></a>
+              <a href="#" class="text-gray-400 hover:text-white transition text-xl"><i class="fab fa-reddit"></i></a>
+              <a href="#" class="text-gray-400 hover:text-white transition text-xl"><i class="fab fa-facebook"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+        <p>© 2023 MangaView. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile Search Functionality
+    document.addEventListener('DOMContentLoaded', () => {
+      const mobileSearchBtn = document.getElementById('mobile-search-btn');
+      const mobileSearchContainer = document.getElementById('mobile-search-container');
+
+      mobileSearchBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        mobileSearchContainer.classList.toggle('active');
+
+        if (mobileSearchContainer.classList.contains('active')) {
+          setTimeout(() => {
+            mobileSearchContainer.querySelector('input').focus();
+          }, 50);
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!mobileSearchContainer.contains(e.target) && e.target !== mobileSearchBtn) {
+          mobileSearchContainer.classList.remove('active');
+        }
+      });
+
+      mobileSearchContainer.querySelector('form').addEventListener('submit', () => {
+        mobileSearchContainer.classList.remove('active');
+      });
+
+      // Carousel Implementation
+      const track = document.getElementById("carousel-track");
+      const maxCovers = 10;
+      const basePath = "assets/test_cover_";
+      const extension = ".jpg";
+      let autoPlayInterval;
+      let slideWidth = 0;
+      let currentPosition = 0;
+      let maxPosition = 0;
+      let isAnimating = false;
+
+      // Load covers with animation
+      function loadCovers() {
+        track.innerHTML = "";
+        
+        for (let i = 1; i <= maxCovers; i++) {
+          const card = document.createElement('div');
+          card.className = 'snap-center flex-shrink-0 w-48 h-72 md:w-64 md:h-96 bg-gray-100 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 animate-fadeIn';
+          card.style.animationDelay = `${i * 0.1}s`;
+          
+          const img = new Image();
+          img.src = `${basePath}${i}${extension}`;
+          img.className = "w-full h-full object-cover transition-transform duration-500 hover:scale-105";
+          img.alt = `Manga Cover ${i}`;
+          img.onerror = function() {
+            console.error(`Failed to load image: ${this.src}`);
+            this.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150" fill="%23e5e7eb"><rect width="100" height="150"/><text x="50" y="75" font-family="Arial" font-size="12" text-anchor="middle" fill="%239ca3af">Cover ${i}</text></svg>';
+          };
+          
+          card.appendChild(img);
+          track.appendChild(card);
+        }
+        
+        initializeCarousel();
+      }
+
+      function initializeCarousel() {
+        const slides = Array.from(track.children);
+        if (slides.length === 0) return;
+
+        slideWidth = slides[0].offsetWidth + 24; // 24px gap
+        currentPosition = -slideWidth; // Start at first real slide
+        maxPosition = -((slides.length) * slideWidth);
+
+        // Clone first and last slides for infinite effect
+        const cloneFirst = slides[0].cloneNode(true);
+        const cloneLast = slides[slides.length - 1].cloneNode(true);
+        
+        // Add unique identifiers to prevent confusion
+        cloneFirst.classList.add('clone-first');
+        cloneLast.classList.add('clone-last');
+        
+        track.prepend(cloneLast);
+        track.appendChild(cloneFirst);
+
+        // Set initial position
+        track.style.transform = `translateX(${currentPosition}px)`;
+
+        // Handle transition end for infinite looping
+        track.addEventListener('transitionend', handleTransitionEnd);
+
+        // Button controls
+        document.querySelector('.next-button').addEventListener('click', () => {
+          if (!isAnimating) nextSlide();
+        });
+
+        document.querySelector('.prev-button').addEventListener('click', () => {
+          if (!isAnimating) prevSlide();
+        });
+
+        // Auto-play with pause on hover
+        function resetAutoPlay() {
+          clearInterval(autoPlayInterval);
+          autoPlayInterval = setInterval(() => {
+            if (!isAnimating) nextSlide();
+          }, 3000);
+        }
+
+        track.addEventListener('mouseenter', () => clearInterval(autoPlayInterval));
+        track.addEventListener('mouseleave', resetAutoPlay);
+        resetAutoPlay();
+
+        // Handle window resize
+        const resizeObserver = new ResizeObserver(() => {
+          slideWidth = track.children[0].offsetWidth + 24;
+          maxPosition = -((track.children.length - 2) * slideWidth);
+          track.style.transition = 'none';
+          track.style.transform = `translateX(${currentPosition}px)`;
+          setTimeout(() => {
+            track.style.transition = '';
+          }, 50);
+        });
+        resizeObserver.observe(track);
+      }
+
+      function handleTransitionEnd() {
+        isAnimating = false;
+        
+        // Check if we need to jump to the opposite end
+        if (currentPosition > 0) {
+          jumpToPosition(-((track.children.length - 2) * slideWidth), false);
+        } else if (currentPosition < -((track.children.length - 1) * slideWidth)) {
+          jumpToPosition(-slideWidth, false);
+        }
+      }
+
+      function jumpToPosition(position, smooth = true) {
+        isAnimating = smooth;
+        track.style.transition = smooth ? 'transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
+        track.style.transform = `translateX(${position}px)`;
+        currentPosition = position;
+      }
+
+      function nextSlide() {
+        if (isAnimating) return;
+        isAnimating = true;
+        
+        const newPosition = currentPosition - slideWidth;
+        if (newPosition < -((track.children.length - 1) * slideWidth)) {
+          jumpToPosition(-slideWidth, false);
+          setTimeout(() => {
+            jumpToPosition(-2 * slideWidth);
+          }, 20);
+        } else {
+          jumpToPosition(newPosition);
+        }
+        
+        resetAutoPlay();
+      }
+
+      function prevSlide() {
+        if (isAnimating) return;
+        isAnimating = true;
+        
+        const newPosition = currentPosition + slideWidth;
+        if (newPosition > 0) {
+          jumpToPosition(-((track.children.length - 2) * slideWidth), false);
+          setTimeout(() => {
+            jumpToPosition(-((track.children.length - 3) * slideWidth));
+          }, 20);
+        } else {
+          jumpToPosition(newPosition);
+        }
+        
+        resetAutoPlay();
+      }
+
+      // Initialize the carousel
+      loadCovers();
+    });
+  </script>
+
+</body>
+</html>
