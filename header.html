@@ -218,12 +218,12 @@
     </div>
   </header>
 
-  <!-- Add spacing below header -->
+  <!-- Spacer to prevent overlap -->
   <div class="pt-24"></div>
 
-  <!-- ✅ YOUR CAROUSEL SECTION GOES HERE -->
+  <!-- Optionally include main content here -->
   <main class="max-w-7xl mx-auto px-4">
-    <!-- Insert your carousel HTML code here -->
+    <!-- Content goes here -->
   </main>
 
   <script>
@@ -244,7 +244,7 @@
       });
 
       document.addEventListener('click', (e) => {
-        if (!mobileSearchContainer.contains(e.target) && e.target !== mobileSearchBtn) {
+        if (!mobileSearchContainer.contains(e.target) && e.target !== mobileSearchBtn && !mobileSearchBtn.contains(e.target)) {
           mobileSearchContainer.classList.remove('active');
         }
       });

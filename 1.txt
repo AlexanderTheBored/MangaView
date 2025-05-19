@@ -1,0 +1,300 @@
+alternative: browse.html (increased loading time due to alternative covers jpg or png)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Browse - MangaView</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    .manga-card {
+      perspective: 1000px;
+    }
+    .manga-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .manga-card.flipped .manga-card-inner {
+      transform: rotateY(180deg);
+    }
+    .manga-card-front, .manga-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+    }
+    .manga-card-back {
+      transform: rotateY(180deg);
+      background-color: #f3f4f6;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+
+<body class="bg-white text-gray-900">
+  <!-- Header (dynamically loaded) -->
+  <div id="header-container"></div>
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("header-container").innerHTML = data;
+      });
+  </script>
+
+  <!-- Main Content -->
+  <main class="pt-[min(120px,15vw)] px-4">
+    <!-- Search and Sort Controls -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div class="w-full sm:w-64">
+        <input type="text" id="search-input" placeholder="Search manga..." 
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="w-full sm:w-48">
+        <select id="sort-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="title-asc">Title (A-Z)</option>
+          <option value="title-desc">Title (Z-A)</option>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Manga Grid Container -->
+    <section id="manga-grid" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <!-- Manga cards will be dynamically inserted here -->
+    </section>
+
+    <!-- Pagination -->
+    <div class="flex justify-center items-center gap-4 mt-10">
+      <button id="prev-page" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition disabled:opacity-50" disabled>Prev</button>
+      <span id="page-indicator" class="text-lg font-medium">Page 1 of 3</span>
+      <button id="next-page" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition disabled:opacity-50">Next</button>
+    </div>
+  </main>
+
+  <script src="JS/session.js"></script>
+  
+  <script>
+    // Generate manga data for 32 covers
+    const mangaData = [];
+    for (let i = 1; i <= 32; i++) {
+      mangaData.push({
+        id: i,
+        title: `Manga ${i}`,
+        // Will try both JPG and PNG extensions
+        coverPaths: [
+          `assets/test_cover_${i}.jpg`,
+          `assets/test_cover_${i}.png`,
+          `assets/cover_${i}.jpg`,
+          `assets/cover_${i}.png`
+        ],
+        chapters: Math.floor(Math.random() * 100) + 1,
+        lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 30) * 24 * 60 * 60 * 1000),
+        rating: (Math.random() * 5).toFixed(1),
+        description: `This is a description for Manga ${i}. It contains exciting adventures and compelling characters.`
+      });
+    }
+
+    // Pagination variables
+    let currentPage = 1;
+    const itemsPerPage = 15;
+    let filteredManga = [...mangaData];
+
+    // DOM elements
+    const mangaGrid = document.getElementById('manga-grid');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+
+    // Initialize the page
+    document.addEventListener('DOMContentLoaded', () => {
+      renderMangaGrid();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      // Pagination buttons
+      prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderMangaGrid();
+          updatePaginationButtons();
+        }
+      });
+
+      nextPageBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredManga.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderMangaGrid();
+          updatePaginationButtons();
+        }
+      });
+
+      // Search input
+      searchInput.addEventListener('input', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+        updatePaginationButtons();
+      });
+
+      // Sort select
+      sortSelect.addEventListener('change', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+        updatePaginationButtons();
+      });
+    }
+
+    function filterAndSortManga() {
+      const searchTerm = searchInput.value.toLowerCase();
+      
+      // Filter manga based on search term
+      filteredManga = mangaData.filter(manga => 
+        manga.title.toLowerCase().includes(searchTerm)
+      );
+
+      // Sort manga based on selected option
+      const sortOption = sortSelect.value;
+      switch (sortOption) {
+        case 'title-asc':
+          filteredManga.sort((a, b) => a.title.localeCompare(b.title));
+          break;
+        case 'title-desc':
+          filteredManga.sort((a, b) => b.title.localeCompare(a.title));
+          break;
+        case 'newest':
+          filteredManga.sort((a, b) => b.lastUpdated - a.lastUpdated);
+          break;
+        case 'oldest':
+          filteredManga.sort((a, b) => a.lastUpdated - b.lastUpdated);
+          break;
+      }
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+
+    // Function to find the first valid image path
+    async function findValidImage(paths) {
+      for (const path of paths) {
+        try {
+          const exists = await checkImageExists(path);
+          if (exists) return path;
+        } catch (e) {
+          continue;
+        }
+      }
+      return 'assets/placeholder_cover.jpg'; // Fallback image
+    }
+
+    // Function to check if an image exists
+    function checkImageExists(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+      });
+    }
+
+    async function renderMangaGrid() {
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const mangaToDisplay = filteredManga.slice(startIndex, endIndex);
+
+      // Clear the grid
+      mangaGrid.innerHTML = '';
+
+      // Add manga cards
+      for (const manga of mangaToDisplay) {
+        const validCoverPath = await findValidImage(manga.coverPaths);
+        
+        const mangaCard = document.createElement('div');
+        mangaCard.className = 'manga-card aspect-[2/3] w-full rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform';
+        
+        mangaCard.innerHTML = `
+          <div class="manga-card-inner h-full">
+            <div class="manga-card-front">
+              <img src="${validCoverPath}" alt="${manga.title}" class="cover-image" />
+              <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2">
+                <h3 class="text-sm font-semibold truncate">${manga.title}</h3>
+              </div>
+            </div>
+            <div class="manga-card-back">
+              <div>
+                <h3 class="text-lg font-bold mb-2">${manga.title}</h3>
+                <p class="text-sm text-gray-600 mb-1">${manga.description}</p>
+              </div>
+              <div class="text-sm">
+                <div class="flex justify-between mb-1">
+                  <span>Chapters:</span>
+                  <span class="font-medium">${manga.chapters}</span>
+                </div>
+                <div class="flex justify-between mb-1">
+                  <span>Last Updated:</span>
+                  <span class="font-medium">${formatDate(manga.lastUpdated)}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Rating:</span>
+                  <span class="font-medium">${manga.rating} <i class="fas fa-star text-yellow-400"></i></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // Add flip animation on click
+        mangaCard.addEventListener('click', function() {
+          this.classList.toggle('flipped');
+        });
+        
+        mangaGrid.appendChild(mangaCard);
+      }
+
+      // Update page indicator
+      const totalPages = Math.ceil(filteredManga.length / itemsPerPage);
+      pageIndicator.textContent = `Page ${currentPage} of ${totalPages > 0 ? totalPages : 1}`;
+    }
+
+    function updatePaginationButtons() {
+      const totalPages = Math.ceil(filteredManga.length / itemsPerPage);
+      
+      // Disable prev button if on first page
+      prevPageBtn.disabled = currentPage === 1;
+      
+      // Disable next button if on last page or no items
+      nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+    }
+  </script>
+</body>
+</html>

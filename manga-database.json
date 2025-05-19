@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "title": "One Piece",
+    "coverUrl": "assets/one_piece.jpg",
+    "chapters": 1090,
+    "lastUpdated": "2023-11-20",
+    "rating": 4.9,
+    "description": "The story follows Monkey D. Luffy and his pirate crew as they search for the legendary treasure known as 'One Piece'.",
+    "genres": ["action", "adventure", "fantasy"]
+  },
+  {
+    "id": 2,
+    "title": "Attack on Titan",
+    "coverUrl": "assets/aot.jpg",
+    "chapters": 139,
+    "lastUpdated": "2021-04-09",
+    "rating": 4.8,
+    "description": "Humanity fights for survival against giant humanoid creatures called Titans.",
+    "genres": ["action", "drama", "horror"]
+  },
+  {
+    "id": 3,
+    "title": "Demon Slayer",
+    "coverUrl": "assets/demon_slayer.jpg",
+    "chapters": 205,
+    "lastUpdated": "2020-05-18",
+    "rating": 4.7,
+    "description": "A young boy becomes a demon slayer after his family is slaughtered by demons.",
+    "genres": ["action", "fantasy"]
+  }
+]

@@ -4,69 +4,307 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Browse - MangaView</title>
-
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
+  
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    .manga-card {
+      perspective: 1000px;
+    }
+    .manga-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .manga-card:hover .manga-card-inner {
+      transform: rotateY(180deg);
+    }
+    .manga-card.locked .manga-card-inner {
+      transform: rotateY(180deg);
+    }
+    .manga-card-front, .manga-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+    }
+    .manga-card-back {
+      transform: rotateY(180deg);
+      background-color: #f3f4f6;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .loading-spinner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+    }
+  </style>
 </head>
 
 <body class="bg-white text-gray-900">
-  <!-- Header (dynamically loaded) -->
+  <!-- Loading Spinner -->
+  <div id="loading-spinner" class="loading-spinner">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
+    <p class="mt-4 text-center">Scanning for manga covers...</p>
+  </div>
+
+  <!-- Header -->
   <div id="header-container"></div>
-  <script>
-    fetch("header.html")
-      .then(res => res.text())
-      .then(data => {
-        document.getElementById("header-container").innerHTML = data;
-      });
-  </script>
 
   <!-- Main Content -->
-  <main class="pt-[min(120px,15vw)] px-4">
-    <section class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-      <!-- Manga Cards -->
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_1.jpg" alt="Manga Cover 1" class="w-full h-full object-cover" />
+  <main class="pt-[min(120px,15vw)] px-4" id="main-content" style="display: none;">
+    <!-- Search and Sort Controls -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div class="w-full sm:w-64">
+        <input type="text" id="search-input" placeholder="Search manga..." 
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
       </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_2.jpg" alt="Manga Cover 2" class="w-full h-full object-cover" />
+      <div class="w-full sm:w-48">
+        <select id="sort-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="title-asc">Title (A-Z)</option>
+          <option value="title-desc">Title (Z-A)</option>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
       </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_3.jpg" alt="Manga Cover 3" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_4.jpg" alt="Manga Cover 4" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_5.jpg" alt="Manga Cover 5" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_6.jpg" alt="Manga Cover 6" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_7.jpg" alt="Manga Cover 7" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_8.jpg" alt="Manga Cover 8" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_9.jpg" alt="Manga Cover 9" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_10.jpg" alt="Manga Cover 10" class="w-full h-full object-cover" />
-      </div>
-    </section>
+    </div>
+
+    <!-- Manga Grid Container -->
+    <section id="manga-grid" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"></section>
 
     <!-- Pagination -->
     <div class="flex justify-center items-center gap-4 mt-10">
-      <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition">Prev</button>
-      <span class="text-lg font-medium">Page 1</span>
-      <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition">Next</button>
+      <button id="prev-page" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition disabled:opacity-50" disabled>Prev</button>
+      <span id="page-indicator" class="text-lg font-medium">Page 1</span>
+      <button id="next-page" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition disabled:opacity-50">Next</button>
     </div>
   </main>
 
-  <script src="JS/session.js"></script>
+  <script>
+    const COVER_PREFIX = 'test_cover_'; // or 'cover_'
+    const ITEMS_PER_PAGE = 15;
+    const EXTENSIONS = ['jpg', 'png']; // Supported extensions
+
+    let mangaData = [];
+    let currentPage = 1;
+    let filteredManga = [];
+
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const mainContent = document.getElementById('main-content');
+    const mangaGrid = document.getElementById('manga-grid');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const headerResponse = await fetch("header.html");
+      document.getElementById("header-container").innerHTML = await headerResponse.text();
+
+      await scanForCovers();
+
+      if (mangaData.length > 0) {
+        filterAndSortManga();
+        renderMangaGrid();
+        setupEventListeners();
+        mainContent.style.display = 'block';
+      } else {
+        loadingSpinner.innerHTML = '<p class="text-red-500">No manga covers found in assets folder!</p>';
+      }
+      loadingSpinner.style.display = 'none';
+    });
+
+    async function scanForCovers() {
+      let id = 1;
+      const foundCovers = [];
+      let consecutiveMissing = 0;
+      const MAX_CONSECUTIVE_MISSING = 5;
+
+      while (consecutiveMissing < MAX_CONSECUTIVE_MISSING) {
+        let found = false;
+
+        for (const ext of EXTENSIONS) {
+          const coverPath = `assets/${COVER_PREFIX}${id}.${ext}`;
+          if (await checkImageExists(coverPath)) {
+            foundCovers.push({
+              id,
+              title: `Manga ${id}`,
+              coverUrl: coverPath,
+              chapters: Math.floor(Math.random() * 100) + 1,
+              lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 30) * 86400000),
+              rating: (Math.random() * 5).toFixed(1),
+              description: `This is description for Manga ${id}.`
+            });
+            consecutiveMissing = 0;
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) consecutiveMissing++;
+        id++;
+        if (id % 10 === 0) {
+          loadingSpinner.querySelector('p').textContent = `Found ${foundCovers.length} covers...`;
+        }
+      }
+
+      mangaData = foundCovers;
+      filteredManga = [...foundCovers];
+    }
+
+    function checkImageExists(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        setTimeout(() => resolve(false), 300);
+      });
+    }
+
+    function renderMangaGrid() {
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const mangaToDisplay = filteredManga.slice(startIndex, endIndex);
+
+      mangaGrid.innerHTML = '';
+      mangaToDisplay.forEach(manga => {
+        const mangaCard = document.createElement('div');
+        mangaCard.className = 'manga-card aspect-[2/3] w-full rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform';
+        
+        mangaCard.innerHTML = `
+          <div class="manga-card-inner h-full">
+            <div class="manga-card-front">
+              <img src="${manga.coverUrl}" alt="${manga.title}" class="cover-image" />
+              <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2">
+                <h3 class="text-sm font-semibold truncate">${manga.title}</h3>
+              </div>
+            </div>
+            <div class="manga-card-back">
+              <div>
+                <h3 class="text-lg font-bold mb-2">${manga.title}</h3>
+                <p class="text-sm text-gray-600 mb-1">${manga.description}</p>
+              </div>
+              <div class="text-sm">
+                <div class="flex justify-between mb-1">
+                  <span>Chapters:</span>
+                  <span class="font-medium">${manga.chapters}</span>
+                </div>
+                <div class="flex justify-between mb-1">
+                  <span>Last Updated:</span>
+                  <span class="font-medium">${formatDate(manga.lastUpdated)}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span>Rating:</span>
+                  <span class="font-medium">${manga.rating} <i class="fas fa-star text-yellow-400"></i></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        mangaCard.addEventListener('click', function(e) {
+          e.stopPropagation();
+          this.classList.toggle('locked');
+        });
+        
+        mangaGrid.appendChild(mangaCard);
+      });
+
+      const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+      pageIndicator.textContent = `Page ${currentPage} of ${totalPages > 0 ? totalPages : 1}`;
+      updatePaginationButtons();
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function filterAndSortManga() {
+      const searchTerm = searchInput.value.toLowerCase();
+      filteredManga = mangaData.filter(manga => manga.title.toLowerCase().includes(searchTerm));
+
+      switch (sortSelect.value) {
+        case 'title-asc':
+          filteredManga.sort((a, b) => {
+            const numA = parseInt(a.title.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(b.title.match(/\d+/)?.[0] || 0);
+            return numA - numB;
+          });
+          break;
+        case 'title-desc':
+          filteredManga.sort((a, b) => {
+            const numA = parseInt(a.title.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(b.title.match(/\d+/)?.[0] || 0);
+            return numB - numA;
+          });
+          break;
+        case 'newest':
+          filteredManga.sort((a, b) => b.lastUpdated - a.lastUpdated);
+          break;
+        case 'oldest':
+          filteredManga.sort((a, b) => a.lastUpdated - b.lastUpdated);
+          break;
+      }
+    }
+
+    function updatePaginationButtons() {
+      const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+      prevPageBtn.disabled = currentPage === 1;
+      nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+    }
+
+    function setupEventListeners() {
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.manga-card.locked').forEach(card => {
+          card.classList.remove('locked');
+        });
+      });
+
+      prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderMangaGrid();
+        }
+      });
+
+      nextPageBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderMangaGrid();
+        }
+      });
+
+      searchInput.addEventListener('input', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+      });
+
+      sortSelect.addEventListener('change', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+      });
+    }
+  </script>
 </body>
 </html>

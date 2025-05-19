@@ -4,23 +4,203 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MangaView</title>
-
-  <!-- Tailwind CSS -->
+  
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <style>
+    .manga-card {
+      perspective: 1000px;
+    }
+    .manga-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .manga-card:hover .manga-card-inner {
+      transform: rotateY(180deg);
+    }
+    .manga-card.locked .manga-card-inner {
+      transform: rotateY(180deg);
+    }
+    .manga-card-front, .manga-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+    }
+    .manga-card-back {
+      transform: rotateY(180deg);
+      background-color: #f3f4f6;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .cover-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .loading-spinner {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1000;
+    }
+    .featured-slide {
+      transition: opacity 0.5s ease;
+    }
+    /* Reader Styles */
+    .manga-reader-container {
+      position: relative;
+      height: 100%;
+    }
+    .manga-reader-page {
+      display: none;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+    .manga-reader-page.active {
+      display: block;
+    }
+    .double-page .manga-reader-page {
+      width: 50%;
+      float: left;
+    }
+    .double-page .manga-reader-page:nth-child(odd) {
+      clear: both;
+    }
+    .scroll-mode .manga-reader-page {
+      display: block;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .reader-controls {
+      transition: opacity 0.3s ease;
+    }
+    .reader-controls.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .tap-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 30%;
+      z-index: 10;
+    }
+    .tap-zone.left {
+      left: 0;
+    }
+    .tap-zone.right {
+      right: 0;
+    }
+    .settings-panel {
+      transition: transform 0.3s ease;
+      transform: translateY(100%);
+    }
+    .settings-panel.open {
+      transform: translateY(0);
+    }
+
+    /* Fullscreen styles */
+body.reader-fullscreen {
+  overflow: hidden;
+}
+
+.reader-fullscreen .manga-reader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: black;
+}
+
+.reader-fullscreen .reader-controls {
+  position: fixed;
+  z-index: 1001;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.reader-fullscreen .reader-controls.top {
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.reader-fullscreen .reader-controls.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.reader-fullscreen .settings-panel {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+}
+
+.reader-fullscreen #fullscreen-btn .fa-expand {
+  display: none;
+}
+
+.reader-fullscreen #fullscreen-btn .fa-compress {
+  display: inline;
+}
+
+#fullscreen-btn .fa-compress {
+  display: none;
+}
+
+{.reader-fullscreen .manga-reader-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  background: black;
+}
+
+.reader-fullscreen .reader-controls {
+  position: fixed;
+  z-index: 1001;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+}
+
+.reader-fullscreen .reader-controls.top {
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.reader-fullscreen .reader-controls.bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+  </style>
 </head>
 
 <body class="bg-white text-gray-900">
-  <!-- Header Container -->
+  <!-- Loading Spinner -->
+  <div id="loading-spinner" class="loading-spinner">
+    <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
+    <p class="mt-4 text-center">Loading manga collection...</p>
+  </div>
+
+  <!-- Header -->
   <div id="header-container"></div>
-  
-  <script>
-    fetch("header.html")
-      .then(res => res.text())
-      .then(data => document.getElementById("header-container").innerHTML = data);
-  </script>
 
   <!-- Intro Modal -->
   <div id="introModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -34,67 +214,1091 @@
   </div>
 
   <!-- Main Content -->
-  <main class="pt-[120px] px-4">
-    <!-- Manga Grid -->
-    <section class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 justify-center">
-      <!-- Manga Cards -->
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_1.jpg" alt="Manga Cover 1" class="w-full h-full object-cover" />
+  <main class="pt-[min(120px,15vw)] px-4" id="main-content" style="display: none;">
+    <!-- Featured Manga Carousel -->
+    <section class="mb-8 relative h-64 md:h-80 rounded-xl overflow-hidden shadow-lg">
+      <div id="featured-carousel" class="h-full w-full relative">
+        <!-- Featured slides will be inserted here -->
       </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_2.jpg" alt="Manga Cover 2" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_3.jpg" alt="Manga Cover 3" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_4.jpg" alt="Manga Cover 4" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_5.jpg" alt="Manga Cover 5" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_6.jpg" alt="Manga Cover 6" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_7.jpg" alt="Manga Cover 7" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_8.jpg" alt="Manga Cover 8" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_9.jpg" alt="Manga Cover 9" class="w-full h-full object-cover" />
-      </div>
-      <div class="aspect-[2/3] w-full bg-gray-100 rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform">
-        <img src="assets/test_cover_10.jpg" alt="Manga Cover 10" class="w-full h-full object-cover" />
+      <div id="featured-indicators" class="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+        <!-- Indicators will be inserted here -->
       </div>
     </section>
 
-    <!-- Pagination -->
-    <div class="flex justify-center items-center gap-4 mt-10">
-      <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition">Prev</button>
-      <span class="text-lg font-medium">Page 1</span>
-      <button class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition">Next</button>
+    <!-- Search and Sort Controls -->
+    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+      <div class="w-full sm:w-64">
+        <input type="text" id="search-input" placeholder="Search manga..." 
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+      </div>
+      <div class="flex gap-2 w-full sm:w-auto">
+        <select id="genre-filter" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">All Genres</option>
+          <option value="action">Action</option>
+          <option value="adventure">Adventure</option>
+          <option value="comedy">Comedy</option>
+          <option value="drama">Drama</option>
+          <option value="fantasy">Fantasy</option>
+          <option value="horror">Horror</option>
+          <option value="romance">Romance</option>
+          <option value="sci-fi">Sci-Fi</option>
+        </select>
+        <select id="sort-select" class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="popular">Popular</option>
+          <option value="latest">Latest</option>
+          <option value="rating">Rating</option>
+          <option value="title-asc">Title (A-Z)</option>
+        </select>
+      </div>
     </div>
 
-    <!-- Login Notice Container -->
-    <div id="loginNoticeContainer"></div>
+    <!-- Manga Grid Section -->
+    <section>
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-2xl font-bold">Popular Manga</h2>
+        <div class="text-sm text-gray-500" id="manga-count">Loading...</div>
+      </div>
+      
+      <div id="manga-grid" class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"></div>
+
+      <!-- Pagination -->
+      <div class="flex justify-center items-center gap-4 mt-10">
+        <button id="prev-page" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition disabled:opacity-50" disabled>Prev</button>
+        <span id="page-indicator" class="text-lg font-medium">Page 1</span>
+        <button id="next-page" class="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 transition disabled:opacity-50">Next</button>
+      </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="mt-16 mb-8 bg-blue-50 rounded-xl p-6">
+      <div class="max-w-2xl mx-auto text-center">
+        <h2 class="text-2xl font-bold mb-2">Stay Updated</h2>
+        <p class="mb-4 text-gray-600">Subscribe to our newsletter to get the latest manga updates directly to your inbox.</p>
+        <div class="flex flex-col sm:flex-row gap-2 justify-center">
+          <input type="email" placeholder="Your email address" 
+                 class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 flex-grow max-w-md">
+          <button class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition">
+            Subscribe
+          </button>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <!-- Modal Logic -->
+  <!-- Footer -->
+  <footer class="bg-gray-100 py-8 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <h3 class="text-xl font-bold">MangaView</h3>
+          <p class="text-gray-600">Your gateway to manga world</p>
+        </div>
+        <div class="flex gap-4">
+          <a href="#" class="text-gray-700 hover:text-blue-500"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="text-gray-700 hover:text-blue-500"><i class="fab fa-facebook"></i></a>
+          <a href="#" class="text-gray-700 hover:text-blue-500"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="text-gray-700 hover:text-blue-500"><i class="fab fa-discord"></i></a>
+        </div>
+      </div>
+      <div class="mt-6 text-center text-gray-500 text-sm">
+        <p>© 2023 MangaView. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
   <script>
-    window.onload = function() {
+    const COVER_PREFIX = 'test_cover_';
+    const ITEMS_PER_PAGE = 15;
+    const EXTENSIONS = ['jpg', 'png', 'jpeg', 'webp'];
+    const FEATURED_COUNT = 5;
+    const MANGA_32_FOLDER = '32/Boku no Kanojo wa Dekkawaii-Ch 1';
+
+    let mangaData = [];
+    let currentPage = 1;
+    let filteredManga = [];
+    let currentFeaturedIndex = 0;
+    let featuredInterval;
+    let currentReaderPage = 1;
+    let totalReaderPages = 0;
+    let readerMode = 'single'; // 'single', 'double', or 'scroll'
+    let controlsVisible = true;
+    let controlsTimeout;
+
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const mainContent = document.getElementById('main-content');
+    const mangaGrid = document.getElementById('manga-grid');
+    const prevPageBtn = document.getElementById('prev-page');
+    const nextPageBtn = document.getElementById('next-page');
+    const pageIndicator = document.getElementById('page-indicator');
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+    const genreFilter = document.getElementById('genre-filter');
+    const mangaCount = document.getElementById('manga-count');
+    const featuredCarousel = document.getElementById('featured-carousel');
+    const featuredIndicators = document.getElementById('featured-indicators');
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Load header
+      const headerResponse = await fetch("header.html");
+      document.getElementById("header-container").innerHTML = await headerResponse.text();
+
+      // Show intro modal if first visit
       if (!localStorage.getItem('introSeen')) {
         document.getElementById('introModal').classList.remove('hidden');
       }
-    };
 
+      // Load manga data
+      await scanForCovers();
+
+      if (mangaData.length > 0) {
+        filterAndSortManga();
+        renderFeaturedManga();
+        renderMangaGrid();
+        setupEventListeners();
+        mainContent.style.display = 'block';
+      } else {
+        loadingSpinner.innerHTML = '<p class="text-red-500">No manga covers found in assets folder!</p>';
+      }
+      loadingSpinner.style.display = 'none';
+    });
+
+    // Close intro modal
     document.getElementById('closeModal').onclick = function() {
       document.getElementById('introModal').classList.add('hidden');
       localStorage.setItem('introSeen', 'true');
     };
-  </script>
 
-  <script src="JS/session.js"></script>
-</body>
-</html>
+    async function scanForCovers() {
+      let id = 1;
+      const foundCovers = [];
+      let consecutiveMissing = 0;
+      const MAX_CONSECUTIVE_MISSING = 5;
+
+      while (consecutiveMissing < MAX_CONSECUTIVE_MISSING) {
+        let found = false;
+
+        for (const ext of EXTENSIONS) {
+          const coverPath = `assets/${COVER_PREFIX}${id}.${ext}`;
+          if (await checkImageExists(coverPath)) {
+            foundCovers.push({
+              id,
+              title: `Manga ${id}`,
+              coverUrl: coverPath,
+              chapters: Math.floor(Math.random() * 100) + 1,
+              lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 30) * 86400000),
+              rating: (Math.random() * 5).toFixed(1),
+              description: `This is description for Manga ${id}.`,
+              genres: getRandomGenres()
+            });
+            consecutiveMissing = 0;
+            found = true;
+            break;
+          }
+        }
+
+        if (!found) consecutiveMissing++;
+        id++;
+        if (id % 10 === 0) {
+          loadingSpinner.querySelector('p').textContent = `Found ${foundCovers.length} covers...`;
+        }
+      }
+
+      mangaData = foundCovers;
+      filteredManga = [...foundCovers];
+    }
+
+    function getRandomGenres() {
+      const allGenres = ['action', 'adventure', 'comedy', 'drama', 'fantasy', 'horror', 'romance', 'sci-fi'];
+      const count = Math.floor(Math.random() * 3) + 1; // 1-3 genres
+      const shuffled = [...allGenres].sort(() => 0.5 - Math.random());
+      return shuffled.slice(0, count);
+    }
+
+    function checkImageExists(url) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        setTimeout(() => resolve(false), 300);
+      });
+    }
+
+    function renderFeaturedManga() {
+      const featuredManga = mangaData.slice(0, FEATURED_COUNT);
+      
+      featuredCarousel.innerHTML = '';
+      featuredIndicators.innerHTML = '';
+      
+      featuredManga.forEach((manga, index) => {
+        // Create slide
+        const slide = document.createElement('div');
+        slide.className = `featured-slide absolute inset-0 ${index === 0 ? 'opacity-100' : 'opacity-0'}`;
+        slide.innerHTML = `
+          <img src="${manga.coverUrl}" alt="${manga.title}" class="w-full h-full object-cover" />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
+            <h3 class="text-white text-2xl font-bold">${manga.title}</h3>
+            <div class="flex gap-2 mt-2">
+              ${manga.genres.map(genre => `
+                <span class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">${genre}</span>
+              `).join('')}
+            </div>
+            <button class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition self-start">
+              Read Now
+            </button>
+          </div>
+        `;
+        featuredCarousel.appendChild(slide);
+        
+        // Create indicator
+        const indicator = document.createElement('button');
+        indicator.className = `w-3 h-3 rounded-full ${index === 0 ? 'bg-white' : 'bg-white/50'}`;
+        indicator.onclick = () => changeFeaturedSlide(index);
+        featuredIndicators.appendChild(indicator);
+      });
+      
+      // Start auto-rotation
+      startFeaturedRotation();
+    }
+
+    function startFeaturedRotation() {
+      clearInterval(featuredInterval);
+      featuredInterval = setInterval(() => {
+        const nextIndex = (currentFeaturedIndex + 1) % FEATURED_COUNT;
+        changeFeaturedSlide(nextIndex);
+      }, 5000);
+    }
+
+    function changeFeaturedSlide(index) {
+      const slides = document.querySelectorAll('.featured-slide');
+      const indicators = document.querySelectorAll('#featured-indicators button');
+      
+      slides[currentFeaturedIndex].classList.remove('opacity-100');
+      slides[currentFeaturedIndex].classList.add('opacity-0');
+      indicators[currentFeaturedIndex].classList.replace('bg-white', 'bg-white/50');
+      
+      slides[index].classList.remove('opacity-0');
+      slides[index].classList.add('opacity-100');
+      indicators[index].classList.replace('bg-white/50', 'bg-white');
+      
+      currentFeaturedIndex = index;
+      startFeaturedRotation(); // Reset timer on manual change
+    }
+
+    function renderMangaGrid() {
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      const mangaToDisplay = filteredManga.slice(startIndex, endIndex);
+
+      mangaGrid.innerHTML = '';
+      
+      if (mangaToDisplay.length === 0) {
+        mangaGrid.innerHTML = `
+          <div class="col-span-full text-center py-12">
+            <i class="fas fa-book-open text-4xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500">No manga found matching your criteria</p>
+          </div>
+        `;
+        return;
+      }
+      
+      mangaToDisplay.forEach(manga => {
+        const mangaCard = document.createElement('div');
+        mangaCard.className = 'manga-card aspect-[2/3] w-full rounded-lg overflow-hidden shadow hover:-translate-y-1 transition-transform';
+        
+        // Check if this is the 32nd manga
+        const is32ndManga = manga.id === 32;
+        
+        mangaCard.innerHTML = `
+          <div class="manga-card-inner h-full">
+            <div class="manga-card-front">
+              <img src="${manga.coverUrl}" alt="${manga.title}" class="cover-image" />
+              <div class="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white p-2">
+                <h3 class="text-sm font-semibold truncate">${manga.title}</h3>
+                <div class="flex justify-between items-center mt-1">
+                  <span class="text-xs">${manga.chapters} ch</span>
+                  <span class="text-xs text-yellow-400">
+                    <i class="fas fa-star"></i> ${manga.rating}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="manga-card-back">
+              <div>
+                <h3 class="text-lg font-bold mb-2">${manga.title}</h3>
+                <p class="text-sm text-gray-600 mb-3">${manga.description}</p>
+                <div class="flex flex-wrap gap-1">
+                  ${manga.genres.map(genre => `
+                    <span class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full">${genre}</span>
+                  `).join('')}
+                </div>
+              </div>
+              <div class="text-sm">
+                <div class="flex justify-between mb-1">
+                  <span>Last Updated:</span>
+                  <span class="font-medium">${formatDate(manga.lastUpdated)}</span>
+                </div>
+                <button class="w-full mt-2 px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition text-sm">
+                  ${is32ndManga ? 'Read Now' : 'View Details'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        // For the 32nd manga, add click handler to open reader
+        if (is32ndManga) {
+          const button = mangaCard.querySelector('.manga-card-back button');
+          button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openMangaReader(manga.id);
+          });
+        } else {
+          mangaCard.addEventListener('click', function(e) {
+            e.stopPropagation();
+            this.classList.toggle('locked');
+          });
+        }
+        
+        mangaGrid.appendChild(mangaCard);
+      });
+
+      const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+      pageIndicator.textContent = `Page ${currentPage} of ${totalPages > 0 ? totalPages : 1}`;
+      mangaCount.textContent = `Showing ${startIndex + 1}-${Math.min(endIndex, filteredManga.length)} of ${filteredManga.length} manga`;
+      updatePaginationButtons();
+    }
+
+    function formatDate(date) {
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function filterAndSortManga() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const genre = genreFilter.value;
+
+      filteredManga = mangaData.filter(manga => {
+        const matchesSearch = manga.title.toLowerCase().includes(searchTerm);
+        const matchesGenre = !genre || manga.genres.includes(genre);
+        return matchesSearch && matchesGenre;
+      });
+
+      switch (sortSelect.value) {
+        case 'latest':
+          filteredManga.sort((a, b) => b.lastUpdated - a.lastUpdated);
+          break;
+        case 'rating':
+          filteredManga.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+          break;
+        case 'title-asc':
+          filteredManga.sort((a, b) => {
+            const numA = parseInt(a.title.match(/\d+/)?.[0] || 0);
+            const numB = parseInt(b.title.match(/\d+/)?.[0] || 0);
+            return numA - numB;
+          });
+          break;
+        default: // popular
+          filteredManga.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
+      }
+    }
+
+    function updatePaginationButtons() {
+      const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+      prevPageBtn.disabled = currentPage === 1;
+      nextPageBtn.disabled = currentPage === totalPages || totalPages === 0;
+    }
+
+    function openMangaReader(mangaId) {
+      // Create a modal for the manga reader
+      const readerModal = document.createElement('div');
+      readerModal.className = 'fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4';
+      readerModal.innerHTML = `
+       <div class="bg-white rounded-lg w-full h-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden relative">
+  <div class="reader-controls top flex justify-between items-center p-2 border-b bg-white">
+    <button id="close-reader" class="p-2 text-gray-500 hover:text-gray-700">
+      <i class="fas fa-times"></i>
+    </button>
+    <div class="flex items-center gap-2">
+      <span id="page-indicator" class="text-sm font-medium">Page 1</span>
+      <button id="reader-settings-btn" class="p-2 text-gray-500 hover:text-gray-700">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+  </div>
+  
+  <div class="manga-reader-container flex-1 overflow-auto relative">
+    <!-- Tap zones for mobile navigation -->
+    <div class="tap-zone left md:hidden" id="prev-tap-zone"></div>
+    <div class="tap-zone right md:hidden" id="next-tap-zone"></div>
+    
+    <!-- Pages will be loaded here -->
+    <div id="manga-pages-container" class="h-full w-full"></div>
+  </div>
+  
+  <div class="reader-controls bottom flex justify-between items-center p-2 border-t bg-white">
+    <button id="prev-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+      <i class="fas fa-chevron-left"></i> Previous
+    </button>
+    <div class="flex gap-2">
+      <button id="single-mode-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">
+        Single
+      </button>
+      <button id="double-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+        Double
+      </button>
+      <button id="scroll-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+        Scroll
+      </button>
+      <button id="fullscreen-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+        <i class="fas fa-expand"></i>
+      </button>
+    </div>
+    <button id="next-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+      Next <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
+  
+  <div class="settings-panel absolute bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg">
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Page Fit</label>
+        <select id="page-fit-select" class="w-full p-2 border rounded">
+          <option value="width">Fit to Width</option>
+          <option value="height">Fit to Height</option>
+          <option value="original">Original Size</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Reading Direction</label>
+        <select id="reading-direction-select" class="w-full p-2 border rounded">
+          <option value="ltr">Left to Right</option>
+          <option value="rtl">Right to Left</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+          
+          <div class="manga-reader-container flex-1 overflow-hidden relative">
+            <!-- Tap zones for mobile navigation -->
+            <div class="tap-zone left md:hidden" id="prev-tap-zone"></div>
+            <div class="tap-zone right md:hidden" id="next-tap-zone"></div>
+            
+            <!-- Pages will be loaded here -->
+            <div id="manga-pages-container" class="h-full overflow-y-auto"></div>
+          </div>
+          
+          <div class="reader-controls flex justify-between items-center p-2 border-t bg-white">
+            <button id="fullscreen-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+              <i class="fas fa-expand"></i>
+              </button>
+            <button id="prev-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+              <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <div class="flex gap-2">
+              <button id="single-mode-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">
+                Single
+              </button>
+              <button id="double-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+                Double
+              </button>
+              <button id="scroll-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+                Scroll
+              </button>
+            </div>
+            <button id="next-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+          
+          <div class="settings-panel absolute bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Page Fit</label>
+                <select id="page-fit-select" class="w-full p-2 border rounded">
+                  <option value="width">Fit to Width</option>
+                  <option value="height">Fit to Height</option>
+                  <option value="original">Original Size</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Reading Direction</label>
+                <select id="reading-direction-select" class="w-full p-2 border rounded">
+                  <option value="ltr">Left to Right</option>
+                  <option value="rtl">Right to Left</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(readerModal);
+      
+      // Initialize reader
+    function initReaderControls() {
+  // existing control initializations...
+  // e.g., setting up navigation buttons, keyboard shortcuts, zoom controls, etc.
+
+  document.getElementById('fullscreen-btn').addEventListener('click', toggleFullscreen);
+}
+
+function toggleFullscreen() {
+  document.body.classList.toggle('reader-fullscreen');
+
+  // Update the fullscreen button icon
+  const fullscreenBtn = document.getElementById('fullscreen-btn');
+  if (document.body.classList.contains('reader-fullscreen')) {
+    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+    fullscreenBtn.classList.add('bg-blue-500', 'text-white');
+    fullscreenBtn.classList.remove('bg-gray-200');
+  } else {
+    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+    fullscreenBtn.classList.remove('bg-blue-500', 'text-white');
+    fullscreenBtn.classList.add('bg-gray-200');
+  }
+
+  // Update page fit after toggling fullscreen
+  setTimeout(updatePageFit, 100);
+  startControlsTimer();
+}
+      loadMangaPages(mangaId);
+      
+      // Hide controls after 3 seconds of inactivity
+      startControlsTimer();
+    }
+
+    function initReaderControls() {
+      // Close button
+      document.getElementById('close-reader').addEventListener('click', () => {
+        document.querySelector('.fixed.inset-0').remove();
+        clearTimeout(controlsTimeout);
+      });
+      
+      // Navigation buttons
+      document.getElementById('prev-page-btn').addEventListener('click', goToPrevPage);
+      document.getElementById('next-page-btn').addEventListener('click', goToNextPage);
+      
+      // Mode buttons
+      document.getElementById('single-mode-btn').addEventListener('click', () => setReaderMode('single'));
+      document.getElementById('double-mode-btn').addEventListener('click', () => setReaderMode('double'));
+      document.getElementById('scroll-mode-btn').addEventListener('click', () => setReaderMode('scroll'));
+      
+      // Settings button
+      document.getElementById('reader-settings-btn').addEventListener('click', toggleSettingsPanel);
+      
+      // Tap zones
+      document.getElementById('prev-tap-zone').addEventListener('click', goToPrevPage);
+      document.getElementById('next-tap-zone').addEventListener('click', goToNextPage);
+      
+      // Click on reader to toggle controls
+      document.querySelector('.manga-reader-container').addEventListener('click', toggleControls);
+      
+      // Settings controls
+      document.getElementById('page-fit-select').addEventListener('change', updatePageFit);
+      document.getElementById('reading-direction-select').addEventListener('change', updateReadingDirection);
+    }
+
+    function toggleControls() {
+      controlsVisible = !controlsVisible;
+      const controls = document.querySelectorAll('.reader-controls');
+      controls.forEach(control => {
+        control.classList.toggle('hidden', !controlsVisible);
+      });
+      
+      if (controlsVisible) {
+        startControlsTimer();
+      } else {
+        clearTimeout(controlsTimeout);
+      }
+    }
+
+    function startControlsTimer() {
+      clearTimeout(controlsTimeout);
+      controlsTimeout = setTimeout(() => {
+        const controls = document.querySelectorAll('.reader-controls');
+        controls.forEach(control => {
+          control.classList.add('hidden');
+        });
+        controlsVisible = false;
+      }, 3000);
+    }
+
+    function toggleSettingsPanel() {
+      document.querySelector('.settings-panel').classList.toggle('open');
+      startControlsTimer();
+    }
+
+    function setReaderMode(mode) {
+      readerMode = mode;
+      const container = document.getElementById('manga-pages-container');
+      
+      // Update mode buttons
+      document.getElementById('single-mode-btn').classList.toggle('bg-blue-500', mode === 'single');
+      document.getElementById('single-mode-btn').classList.toggle('bg-gray-200', mode !== 'single');
+      document.getElementById('double-mode-btn').classList.toggle('bg-blue-500', mode === 'double');
+      document.getElementById('double-mode-btn').classList.toggle('bg-gray-200', mode !== 'double');
+      document.getElementById('scroll-mode-btn').classList.toggle('bg-blue-500', mode === 'scroll');
+      document.getElementById('scroll-mode-btn').classList.toggle('bg-gray-200', mode !== 'scroll');
+      
+      // Update container classes
+      container.classList.remove('single-mode', 'double-mode', 'scroll-mode');
+      container.classList.add(`${mode}-mode`);
+      
+      // Show current page based on mode
+      showCurrentPage();
+      startControlsTimer();
+    }
+
+    function updatePageFit() {
+      const fitMode = document.getElementById('page-fit-select').value;
+      const pages = document.querySelectorAll('.manga-reader-page img');
+      
+      pages.forEach(img => {
+        img.style.maxWidth = fitMode === 'width' ? '100%' : '';
+        img.style.maxHeight = fitMode === 'height' ? '100%' : '';
+        img.style.width = fitMode === 'original' ? 'auto' : '';
+        img.style.height = fitMode === 'original' ? 'auto' : '';
+      });
+      
+      startControlsTimer();
+    }
+
+    function updateReadingDirection() {
+      const direction = document.getElementById('reading-direction-select').value;
+      document.getElementById('manga-pages-container').style.direction = direction;
+      startControlsTimer();
+    }
+
+    function goToPrevPage() {
+      if (currentReaderPage > 1) {
+        currentReaderPage--;
+        showCurrentPage();
+        updateReaderPagination();
+      }
+      startControlsTimer();
+    }
+
+    function goToNextPage() {
+      if (currentReaderPage < totalReaderPages) {
+        currentReaderPage++;
+        showCurrentPage();
+        updateReaderPagination();
+      }
+      startControlsTimer();
+    }
+
+    function showCurrentPage() {
+      const pages = document.querySelectorAll('.manga-reader-page');
+      
+      if (readerMode === 'scroll') {
+        // In scroll mode, just ensure we're scrolled to the current page
+        pages.forEach(page => page.classList.add('active'));
+        const currentPageElement = document.querySelector(`.manga-reader-page[data-page-number="${currentReaderPage}"]`);
+        if (currentPageElement) {
+          currentPageElement.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else if (readerMode === 'double') {
+        // In double page mode, show two pages at a time
+        pages.forEach(page => page.classList.remove('active'));
+        
+        const firstPage = currentReaderPage % 2 === 0 ? currentReaderPage - 1 : currentReaderPage;
+        const secondPage = firstPage + 1;
+        
+        document.querySelector(`.manga-reader-page[data-page-number="${firstPage}"]`)?.classList.add('active');
+        document.querySelector(`.manga-reader-page[data-page-number="${secondPage}"]`)?.classList.add('active');
+      } else {
+        // Single page mode
+        pages.forEach(page => page.classList.remove('active'));
+        document.querySelector(`.manga-reader-page[data-page-number="${currentReaderPage}"]`)?.classList.add('active');
+      }
+    }
+
+    async function loadMangaPages(mangaId) {
+      const mangaPagesContainer = document.getElementById('manga-pages-container');
+      mangaPagesContainer.innerHTML = `
+        <div class="text-center py-8">
+          <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mx-auto"></div>
+          <p class="mt-2">Loading manga pages...</p>
+        </div>
+      `;
+      
+      try {
+        // Look for pages in manga/32/Boku no Kanojo wa Dekkawaii-Ch 1/ with naming pattern Boku no Kanojo wa Dekkawaii-Page_1.jpg
+        let pageNumber = 1;
+        const pages = [];
+        
+        // Check for pages until we don't find any (with a reasonable limit)
+        while (pageNumber <= 100) { // Set a reasonable max page limit
+          let found = false;
+          
+          for (const ext of EXTENSIONS) {
+            const pagePath = `manga/${MANGA_32_FOLDER}/Boku no Kanojo wa Dekkawaii-Page_${pageNumber}.${ext}`;
+            if (await checkImageExists(pagePath)) {
+              pages.push({
+                number: pageNumber,
+                path: pagePath
+              });
+              found = true;
+              break;
+            }
+          }
+          
+          if (!found) break;
+          pageNumber++;
+        }
+        
+        if (pages.length === 0) {
+          mangaPagesContainer.innerHTML = `
+            <div class="text-center py-8 text-gray-500">
+              <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+              <p>No pages found for this manga chapter.</p>
+              <p class="mt-2 text-sm">Expected path: manga/${MANGA_32_FOLDER}/Boku no Kanojo wa Dekkawaii-Page_1.jpg</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Display the pages
+        mangaPagesContainer.innerHTML = '';
+        pages.forEach((page, index) => {
+          const pageElement = document.createElement('div');
+          pageElement.className = 'manga-reader-page';
+          pageElement.dataset.pageNumber = page.number;
+          pageElement.innerHTML = `
+            <img src="${page.path}" alt="Page ${page.number}" class="mx-auto" />
+          `;
+          mangaPagesContainer.appendChild(pageElement);
+        });
+        
+        // Set up pagination controls
+        totalReaderPages = pages.length;
+        currentReaderPage = 1;
+        updateReaderPagination();
+        setReaderMode('single');
+        updatePageFit();
+        
+      } catch (error) {
+        console.error('Error loading manga pages:', error);
+        mangaPagesContainer.innerHTML = `
+          <div class="text-center py-8 text-red-500">
+            <i class="fas fa-exclamation-circle text-4xl mb-4"></i>
+            <p>Error loading manga pages.</p>
+          </div>
+        `;
+      }
+    }
+
+    function updateReaderPagination() {
+      document.getElementById('page-indicator').textContent = `Page ${currentReaderPage} of ${totalReaderPages}`;
+      document.getElementById('prev-page-btn').disabled = currentReaderPage === 1;
+      document.getElementById('next-page-btn').disabled = currentReaderPage === totalReaderPages;
+    }
+
+    function setupEventListeners() {
+      // Click outside to close flipped cards
+      document.addEventListener('click', () => {
+        document.querySelectorAll('.manga-card.locked').forEach(card => {
+          card.classList.remove('locked');
+        });
+      });
+
+      // Pagination
+      prevPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderMangaGrid();
+        }
+      });
+
+      nextPageBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderMangaGrid();
+        }
+      });
+
+      // Search and filters
+      searchInput.addEventListener('input', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+      });
+
+      genreFilter.addEventListener('change', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+      });
+
+      sortSelect.addEventListener('change', () => {
+        currentPage = 1;
+        filterAndSortManga();
+        renderMangaGrid();
+      });
+    
+    }
+
+    // Keyboard navigation for reader
+    document.addEventListener('keydown', (e) => {
+      const readerOpen = document.querySelector('.manga-reader-container');
+      if (!readerOpen) return;
+      
+      if (e.key === 'ArrowLeft') {
+        goToPrevPage();
+      } else if (e.key === 'ArrowRight') {
+        goToNextPage();
+      } else if (e.key === 'Escape') {
+        document.querySelector('#close-reader').click();
+      } else if (e.key === ' ') {
+        e.preventDefault();
+        toggleControls();
+      }
+    });
+
+    // Handle swipe gestures for mobile
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.querySelector('.manga-reader-container').addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+    }, false);
+
+    document.querySelector('.manga-reader-container').addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      handleSwipe();
+    }, false);
+
+    function handleSwipe() {
+      const direction = document.getElementById('reading-direction-select').value;
+      const swipeThreshold = 50;
+      
+      if (direction === 'ltr') {
+        // Left to Right reading
+        if (touchEndX < touchStartX - swipeThreshold) {
+          goToNextPage(); // Swipe left to go forward
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+          goToPrevPage(); // Swipe right to go back
+        }
+      } else {
+        // Right to Left reading
+        if (touchEndX < touchStartX - swipeThreshold) {
+          goToPrevPage(); // Swipe left to go back
+        } else if (touchEndX > touchStartX + swipeThreshold) {
+          goToNextPage(); // Swipe right to go forward
+        }
+      }
+    }
+
+    // Improved page fitting function
+    function updatePageFit() {
+      const fitMode = document.getElementById('page-fit-select').value;
+      const container = document.querySelector('.manga-reader-container');
+      const pages = document.querySelectorAll('.manga-reader-page');
+      
+      pages.forEach(page => {
+        const img = page.querySelector('img');
+        if (!img) return;
+        
+        // Reset styles first
+        img.style.maxWidth = '';
+        img.style.maxHeight = '';
+        img.style.width = '';
+        img.style.height = '';
+        img.style.objectFit = '';
+        page.style.display = '';
+        page.style.width = '';
+        page.style.float = '';
+        
+        if (readerMode === 'scroll') {
+          img.style.maxWidth = '100%';
+          img.style.height = 'auto';
+          return;
+        }
+        
+        switch (fitMode) {
+          case 'width':
+            img.style.maxWidth = '100%';
+            img.style.height = 'auto';
+            img.style.objectFit = 'contain';
+            break;
+          case 'height':
+            img.style.maxHeight = '100%';
+            img.style.width = 'auto';
+            img.style.objectFit = 'contain';
+            break;
+          case 'original':
+            img.style.width = 'auto';
+            img.style.height = 'auto';
+            break;
+        }
+      });
+      
+      // Adjust container for double page mode
+      if (readerMode === 'double') {
+        const containerWidth = container.clientWidth;
+        pages.forEach(page => {
+          page.style.width = '50%';
+        });
+      }
+      
+      // Scroll to current page after fitting
+      setTimeout(() => {
+        const currentPageElement = document.querySelector(`.manga-reader-page[data-page-number="${currentReaderPage}"]`);
+        if (currentPageElement) {
+          currentPageElement.scrollIntoView({ behavior: 'auto', block: 'center' });
+        }
+      }, 50);
+      
+      startControlsTimer();
+    }
+
+    // Enhanced showCurrentPage function
+    function showCurrentPage() {
+      const pages = document.querySelectorAll('.manga-reader-page');
+      const container = document.getElementById('manga-pages-container');
+      
+      if (readerMode === 'scroll') {
+        // In scroll mode, all pages are visible
+        pages.forEach(page => page.classList.add('active'));
+        
+        // Scroll to current page
+        const currentPageElement = document.querySelector(`.manga-reader-page[data-page-number="${currentReaderPage}"]`);
+        if (currentPageElement) {
+          currentPageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      } else if (readerMode === 'double') {
+        // In double page mode, show two pages at a time
+        pages.forEach(page => {
+          page.classList.remove('active');
+          page.style.display = 'none';
+        });
+        
+        const direction = document.getElementById('reading-direction-select').value;
+        let firstPage, secondPage;
+        
+        if (direction === 'rtl') {
+          // Right to Left (manga style)
+          if (currentReaderPage % 2 === 0) {
+            firstPage = currentReaderPage;
+            secondPage = currentReaderPage - 1;
+          } else {
+            firstPage = currentReaderPage + 1;
+            secondPage = currentReaderPage;
+          }
+        } else {
+          // Left to Right (comic style)
+          if (currentReaderPage % 2 === 1) {
+            firstPage = currentReaderPage;
+            secondPage = currentReaderPage + 1;
+          } else {
+            firstPage = currentReaderPage - 1;
+            secondPage = currentReaderPage;
+          }
+        }
+        
+        // Ensure we don't go out of bounds
+        if (firstPage > 0 && firstPage <= totalReaderPages) {
+          const firstPageElement = document.querySelector(`.manga-reader-page[data-page-number="${firstPage}"]`);
+          if (firstPageElement) {
+            firstPageElement.style.display = 'block';
+            firstPageElement.classList.add('active');
+          }
+        }
+        
+        if (secondPage > 0 && secondPage <= totalReaderPages) {
+          const secondPageElement = document.querySelector(`.manga-reader-page[data-page-number="${secondPage}"]`);
+          if (secondPageElement) {
+            secondPageElement.style.display = 'block';
+            secondPageElement.classList.add('active');
+          }
+        }
+        
+        // Scroll to show both pages
+        container.scrollLeft = 0;
+      } else {
+        // Single page mode
+        pages.forEach(page => {
+          page.classList.remove('active');
+          page.style.display = 'none';
+        });
+        
+        const currentPageElement = document.querySelector(`.manga-reader-page[data-page-number="${currentReaderPage}"]`);
+        if (currentPageElement) {
+          currentPageElement.style.display = 'block';
+          currentPageElement.classList.add('active');
+          currentPageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+      
+      updateReaderPagination();
+    }
+
+    // Enhanced setReaderMode function
+    function setReaderMode(mode) {
+      readerMode = mode;
+      const container = document.getElementById('manga-pages-container');
+      
+      // Update mode buttons
+      document.getElementById('single-mode-btn').classList.toggle('bg-blue-500', mode === 'single');
+      document.getElementById('single-mode-btn').classList.toggle('text-white', mode === 'single');
+      document.getElementById('single-mode-btn').classList.toggle('bg-gray-200', mode !== 'single');
+      document.getElementById('double-mode-btn').classList.toggle('bg-blue-500', mode === 'double');
+      document.getElementById('double-mode-btn').classList.toggle('text-white', mode === 'double');
+      document.getElementById('double-mode-btn').classList.toggle('bg-gray-200', mode !== 'double');
+      document.getElementById('scroll-mode-btn').classList.toggle('bg-blue-500', mode === 'scroll');
+      document.getElementById('scroll-mode-btn').classList.toggle('text-white', mode === 'scroll');
+      document.getElementById('scroll-mode-btn').classList.toggle('bg-gray-200', mode !== 'scroll');
+      
+      // Update container classes
+      container.classList.remove('single-mode', 'double-mode', 'scroll-mode');
+      container.classList.add(`${mode}-mode`);
+      
+      // Reset all pages to default state
+      const pages = document.querySelectorAll('.manga-reader-page');
+      pages.forEach(page => {
+        page.style.display = '';
+        page.style.width = '';
+        page.style.float = '';
+      });
+      
+      // Apply mode-specific styles
+      if (mode === 'double') {
+        pages.forEach(page => {
+          page.style.width = '50%';
+        });
+      }
+      
+      // Show current page based on mode
+      showCurrentPage();
+      updatePageFit();
+      startControlsTimer();
+    }
+
+    // Initialize the reader with default settings
+    function initReader() {
+      setReaderMode('single');
+      updatePageFit();
+      updateReadingDirection();
+    }
+
+    // Update the reading direction
+    function updateReadingDirection() {
+      const direction = document.getElementById('reading-direction-select').value;
+      const container = document.getElementById('manga-pages-container');
+      
+      container.style.direction = direction;
+      
+      // For RTL, we need to adjust the scroll position
+      if (direction === 'rtl') {
+        container.scrollLeft = container.scrollWidth;
+      }
+      
+      // Update the current page display
+      showCurrentPage();
+      startControlsTimer();
+    }
+
+    
+  </script>
