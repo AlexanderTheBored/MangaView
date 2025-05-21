@@ -1,0 +1,130 @@
+perfect size for mobile layout
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MangaView - Latest</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- FontAwesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+  
+  <style>
+    .carousel-container {
+      width: 100%;
+      overflow: hidden;
+      position: relative;
+    }
+    .carousel-track {
+      display: flex;
+      transition: transform 0.5s ease;
+      gap: 1rem;
+      padding: 1rem 0;
+    }
+    .carousel-slide {
+      flex: 0 0 auto;
+      width: 200px;
+      height: 300px;
+    }
+  </style>
+</head>
+
+<body class="bg-white text-gray-900 min-h-screen">
+  <!-- Header Container -->
+  <div id="header-container"></div>
+  <script>
+    fetch("header.html")
+      .then(res => res.text())
+      .then(data => {
+        document.getElementById("header-container").outerHTML = data;
+      });
+  </script>
+
+  <main class="pt-[120px] pb-12 px-4">
+    <!-- Simple Working Carousel -->
+    <section class="carousel-container relative">
+      <div class="carousel-track" id="carousel-track">
+        <!-- Manga covers will be inserted here -->
+      </div>
+      <button class="carousel-btn prev-button absolute left-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow flex items-center justify-center">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button class="carousel-btn next-button absolute right-0 top-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow flex items-center justify-center">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Simple carousel implementation
+      const track = document.getElementById("carousel-track");
+      const prevBtn = document.querySelector('.prev-button');
+      const nextBtn = document.querySelector('.next-button');
+      let currentPosition = 0;
+      let autoScrollInterval;
+      
+      // Load available covers (1-10 as example)
+      function loadCovers() {
+        for (let i = 1; i <= 10; i++) {
+          const slide = document.createElement('div');
+          slide.className = 'carousel-slide bg-gray-100 rounded-lg overflow-hidden shadow';
+          
+          const img = document.createElement('img');
+          img.src = `assets/test_cover_${i}.jpg`;
+          img.alt = `Manga Cover ${i}`;
+          img.className = 'w-full h-full object-cover';
+          img.onerror = () => {
+            img.src = 'assets/placeholder_cover.jpg';
+          };
+          
+          slide.appendChild(img);
+          track.appendChild(slide);
+        }
+        
+        startAutoScroll();
+      }
+      
+      function startAutoScroll() {
+        const slideWidth = document.querySelector('.carousel-slide').offsetWidth + 16; // 16px gap
+        const maxScroll = -((track.children.length - 1) * slideWidth);
+        
+        function scrollNext() {
+          currentPosition -= slideWidth;
+          if (currentPosition < maxScroll) {
+            currentPosition = 0;
+          }
+          track.style.transform = `translateX(${currentPosition}px)`;
+        }
+        
+        prevBtn.addEventListener('click', () => {
+          currentPosition += slideWidth;
+          if (currentPosition > 0) currentPosition = maxScroll;
+          track.style.transform = `translateX(${currentPosition}px)`;
+          resetAutoScroll();
+        });
+        
+        nextBtn.addEventListener('click', () => {
+          scrollNext();
+          resetAutoScroll();
+        });
+        
+        function resetAutoScroll() {
+          clearInterval(autoScrollInterval);
+          autoScrollInterval = setInterval(scrollNext, 2000);
+        }
+        
+        resetAutoScroll();
+      }
+      
+      loadCovers();
+    });
+  </script>
+</body>
+</html>
+
+

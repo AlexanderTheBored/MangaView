@@ -57,16 +57,40 @@
     .featured-slide {
       transition: opacity 0.5s ease;
     }
+    
     /* Reader Styles */
-    .manga-reader-container {
-      position: relative;
-      height: 100%;
-    }
+.manga-reader-container {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+}
+
+#manga-pages-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
     .manga-reader-page {
       display: none;
       max-width: 100%;
       margin: 0 auto;
     }
+
+    .manga-reader-page img {
+      max-height: 80vh !important;
+      width: auto !important;
+      height: auto !important;
+      max-width: 100% !important;
+      object-fit: contain !important;
+      margin: 0 auto;
+      display: block;     
+    }
+    
     .manga-reader-page.active {
       display: block;
     }
@@ -77,6 +101,20 @@
     .double-page .manga-reader-page:nth-child(odd) {
       clear: both;
     }
+    
+    .double-mode {
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+    }
+   .double-mode .manga-reader-page {
+      width: 50%;
+      float: none !important;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+}
+
     .scroll-mode .manga-reader-page {
       display: block;
       width: 100%;
@@ -110,7 +148,7 @@
       transform: translateY(0);
     }
 
-    /* Fullscreen styles */
+ /* Fullscreen styles */
 body.reader-fullscreen {
   overflow: hidden;
 }
@@ -161,34 +199,6 @@ body.reader-fullscreen {
   display: none;
 }
 
-{.reader-fullscreen .manga-reader-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-  background: black;
-}
-
-.reader-fullscreen .reader-controls {
-  position: fixed;
-  z-index: 1001;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-}
-
-.reader-fullscreen .reader-controls.top {
-  top: 0;
-  left: 0;
-  right: 0;
-}
-
-.reader-fullscreen .reader-controls.bottom {
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
   </style>
 </head>
 
@@ -613,48 +623,72 @@ body.reader-fullscreen {
       const readerModal = document.createElement('div');
       readerModal.className = 'fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4';
       readerModal.innerHTML = `
-       <div class="bg-white rounded-lg w-full h-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden relative">
-  <div class="reader-controls top flex justify-between items-center p-2 border-b bg-white">
-    <button id="close-reader" class="p-2 text-gray-500 hover:text-gray-700">
-      <i class="fas fa-times"></i>
-    </button>
-    <div class="flex items-center gap-2">
-      <span id="page-indicator" class="text-sm font-medium">Page 1</span>
-      <button id="reader-settings-btn" class="p-2 text-gray-500 hover:text-gray-700">
-        <i class="fas fa-cog"></i>
-      </button>
-    </div>
-  </div>
-  
-  <div class="manga-reader-container flex-1 overflow-auto relative">
-    <!-- Tap zones for mobile navigation -->
-    <div class="tap-zone left md:hidden" id="prev-tap-zone"></div>
-    <div class="tap-zone right md:hidden" id="next-tap-zone"></div>
-    
-    <!-- Pages will be loaded here -->
-    <div id="manga-pages-container" class="h-full w-full"></div>
-  </div>
-  
-  <div class="reader-controls bottom flex justify-between items-center p-2 border-t bg-white">
-    <button id="prev-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
-      <i class="fas fa-chevron-left"></i> Previous
-    </button>
-    <div class="flex gap-2">
-      <button id="single-mode-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">
-        Single
-      </button>
-      <button id="double-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
-        Double
-      </button>
-      <button id="scroll-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
-        Scroll
-      </button>
-      <button id="fullscreen-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
-        <i class="fas fa-expand"></i>
-      </button>
-    </div>
-    <button id="next-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
-      Next <i class="fas fa-chevron-right"></i>
+        <div class="bg-white rounded-lg w-full h-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden relative">
+          <!-- Top Controls -->
+          <div class="reader-controls top flex justify-between items-center p-2 border-b bg-white">
+            <button id="close-reader" class="p-2 text-gray-500 hover:text-gray-700">
+              <i class="fas fa-times"></i>
+            </button>
+            <div class="flex items-center gap-2">
+              <span id="page-indicator" class="text-sm font-medium">Page 1</span>
+              <button id="reader-settings-btn" class="p-2 text-gray-500 hover:text-gray-700">
+                <i class="fas fa-cog"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Manga Pages Area -->
+            <div class="manga-reader-container flex-1 flex items-center justify-center overflow-auto relative">
+              <!-- Tap zones for mobile navigation -->
+              <div class="tap-zone left md:hidden" id="prev-tap-zone"></div>
+              <div class="tap-zone right md:hidden" id="next-tap-zone"></div>
+              <!-- Pages will be loaded here -->
+              <div id="manga-pages-container" class="w-full flex justify-center items-center"></div>
+            </div>
+          </div>
+          <!-- Bottom Controls -->
+          <div class="reader-controls bottom flex justify-between items-center p-2 border-t bg-white">
+            <button id="prev-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+              <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <div class="flex gap-2">
+              <button id="single-mode-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">
+                Single
+              </button>
+              <button id="double-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+                Double
+              </button>
+              <button id="scroll-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+                Scroll
+              </button>
+              <button id="fullscreen-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
+                <i class="fas fa-expand"></i>
+              </button>
+            </div>
+            <button id="next-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
+              Next <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+          <!-- Settings Panel -->
+          <div class="settings-panel absolute bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium mb-1">Page Fit</label>
+                <select id="page-fit-select" class="w-full p-2 border rounded">
+                  <option value="width">Fit to Width</option>
+                  <option value="height" selected>Fit to Height</option>
+                  <option value="original">Original Size</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium mb-1">Reading Direction</label>
+                <select id="reading-direction-select" class="w-full p-2 border rounded">
+                  <option value="ltr">Left to Right</option>
+                  <option value="rtl">Right to Left</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
     </button>
   </div>
   
@@ -677,40 +711,6 @@ body.reader-fullscreen {
       </div>
     </div>
   </div>
-</div>
-          
-          <div class="manga-reader-container flex-1 overflow-hidden relative">
-            <!-- Tap zones for mobile navigation -->
-            <div class="tap-zone left md:hidden" id="prev-tap-zone"></div>
-            <div class="tap-zone right md:hidden" id="next-tap-zone"></div>
-            
-            <!-- Pages will be loaded here -->
-            <div id="manga-pages-container" class="h-full overflow-y-auto"></div>
-          </div>
-          
-          <div class="reader-controls flex justify-between items-center p-2 border-t bg-white">
-            <button id="fullscreen-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
-              <i class="fas fa-expand"></i>
-              </button>
-            <button id="prev-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
-              <i class="fas fa-chevron-left"></i> Previous
-            </button>
-            <div class="flex gap-2">
-              <button id="single-mode-btn" class="px-3 py-1 bg-blue-500 text-white rounded text-sm">
-                Single
-              </button>
-              <button id="double-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
-                Double
-              </button>
-              <button id="scroll-mode-btn" class="px-3 py-1 bg-gray-200 rounded text-sm">
-                Scroll
-              </button>
-            </div>
-            <button id="next-page-btn" class="px-4 py-2 bg-gray-200 rounded disabled:opacity-50">
-              Next <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
-          
           <div class="settings-panel absolute bottom-0 left-0 right-0 bg-white p-4 border-t shadow-lg">
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -733,6 +733,8 @@ body.reader-fullscreen {
         </div>
       `;
       
+      const existingModal = document.querySelector('.fixed.inset-0');
+      if (existingModal) existingModal.remove();
       document.body.appendChild(readerModal);
       
       // Initialize reader
@@ -855,10 +857,10 @@ function toggleFullscreen() {
       const pages = document.querySelectorAll('.manga-reader-page img');
       
       pages.forEach(img => {
-        img.style.maxWidth = fitMode === 'width' ? '100%' : '';
-        img.style.maxHeight = fitMode === 'height' ? '100%' : '';
-        img.style.width = fitMode === 'original' ? 'auto' : '';
-        img.style.height = fitMode === 'original' ? 'auto' : '';
+       img.style.maxHeight = '80vh';
+       img.style.width = 'auto';
+       img.style.maxWidth = '100%';
+       img.style.objectFit = 'contain';
       });
       
       startControlsTimer();
