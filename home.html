@@ -1005,21 +1005,21 @@ function toggleFullscreen() {
         });
       });
 
-      // Pagination
-      prevPageBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderMangaGrid();
-        }
-      });
+  // Pagination
+  prevPageBtn.onclick = () => {
+    if (currentPage > 1) {
+      currentPage--;
+      renderMangaGrid();
+    }
+  };
 
-      nextPageBtn.addEventListener('click', () => {
-        const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderMangaGrid();
-        }
-      });
+  nextPageBtn.onclick = () => {
+    const totalPages = Math.ceil(filteredManga.length / ITEMS_PER_PAGE);
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderMangaGrid();
+    }
+  };
 
       // Search and filters
       searchInput.addEventListener('input', () => {
