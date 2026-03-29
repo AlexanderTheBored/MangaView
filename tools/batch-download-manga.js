@@ -42,6 +42,30 @@ function prompt(question) {
   return new Promise(resolve => rl.question(question, ans => { rl.close(); resolve(ans.trim()); }));
 }
 
+// ── Partial chapter filtering ────────────────────────────
+// When a whole-number chapter exists (e.g. "14"), its decimal siblings
+// (14.5, 14.6) are partial translator splits of the same content.
+// Skip them — the whole number is the complete version.
+// If ONLY decimals exist for a base (e.g. 1.1, 1.2 with no "1"), keep them.
+
+function filterPartialChapters(chapters) {
+  // Collect all unique chapter numbers
+  const numbers = new Set(chapters.map(c => c.number));
+
+  // For each chapter, check if a whole-number version exists
+  return chapters.filter(c => {
+    const num = parseFloat(c.number);
+    if (!Number.isInteger(num)) {
+      // This is a decimal chapter — skip if the whole number exists
+      const base = Math.floor(num).toString();
+      if (numbers.has(base)) {
+        return false; // skip partial
+      }
+    }
+    return true;
+  });
+}
+
 // Fetch and resolve all chapters + scanlation group names
 async function getAllChapterData(mangaUuid) {
   const chapters = [];
@@ -62,7 +86,12 @@ async function getAllChapterData(mangaUuid) {
     }
 
     json.data.forEach(ch => {
-      const num = ch.attributes.chapter || '0';
+      const num = ch.attributes.chapter;
+
+      // Skip chapters with no number (null/empty) — these are
+      // unnumbered entries that can't be placed in the folder structure
+      if (num == null || num === '') return;
+
       const rel = (ch.relationships || []).find(r => r.type === 'scanlation_group');
       const gid = rel?.id;
       chapters.push({ id: ch.id, number: num, groupId: gid });
@@ -83,14 +112,17 @@ async function getAllChapterData(mangaUuid) {
     }
   }
 
-return chapters.map(c => ({
-  id:        c.id,
-  number:    c.number,
-  groupId:   c.groupId,
-  groupName: c.groupId == null
-    ? 'No Scanlator'
-    : (groups[c.groupId] || 'Unknown Scanlator')
-}));
+  const enriched = chapters.map(c => ({
+    id:        c.id,
+    number:    c.number,
+    groupId:   c.groupId,
+    groupName: c.groupId == null
+      ? 'No Scanlator'
+      : (groups[c.groupId] || 'Unknown Scanlator')
+  }));
+
+  // Filter out partial chapters when the complete version exists
+  return filterPartialChapters(enriched);
 }
 
 (async () => {
@@ -110,6 +142,13 @@ return chapters.map(c => ({
 
     console.log(`📚 Found ${chapters.length} entries for Manga: ${rawTitle}\n`);
 
+    // Detect if there's only one scanlation group for the whole manga
+    const uniqueGroups = [...new Set(chapters.map(c => c.groupId).filter(Boolean))];
+    const uniqueGroupNames = [...new Set(chapters.map(c => c.groupName))];
+    if (uniqueGroups.length <= 1) {
+      console.log(`ℹ️  Only one source available: ${uniqueGroupNames[0] || 'Unknown'} — no scanlator prompt needed.\n`);
+    }
+
     // Group by chapter number
     const map = new Map();
     chapters.forEach(c => {
@@ -122,11 +161,11 @@ return chapters.map(c => ({
     for (const number of sorted) {
       const entries = map.get(number);
       if (entries.length === 1) {
-console.log(`📥  Downloading chapter ${number}`);
+        console.log(`📥  Downloading chapter ${number}`);
         execSync(`node tools/download-chapter.js ${entries[0].id}`, { stdio: 'inherit' });
 
       } else {
-        // apply your single preferred scanlator (or “all”) to every chapter
+        // apply your single preferred scanlator (or "all") to every chapter
         let toDownload;
 
         if (downloadAll) {
@@ -135,6 +174,7 @@ console.log(`📥  Downloading chapter ${number}`);
           const preferred = entries.filter(c => c.groupId === preferredGroupId);
           if (preferred.length) {
             toDownload = preferred;
+            console.log(`📥  Chapter ${number} — Translator: ${preferred[0].groupName}`);
           }
         }
 
@@ -153,11 +193,13 @@ console.log(`📥  Downloading chapter ${number}`);
           if (ans.toLowerCase() === 'a') {
             downloadAll = true;
             toDownload   = entries;
+            console.log(`📥  Downloading from all translators`);
           } else {
             const idx    = parseInt(ans, 10) - 1;
             const choice = entries[idx];
             preferredGroupId = choice.groupId;
             toDownload       = [choice];
+            console.log(`📥  Translator: ${choice.groupName} (remembered for remaining chapters)`);
           }
         }
 

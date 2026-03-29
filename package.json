@@ -6,7 +6,9 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "fetch": "node tools/generate-manga-json.js"
+    "fetch": "node tools/generate-manga-json.js",
+    "check-updates": "node tools/check-updates.js",
+    "check-updates:download": "node tools/check-updates.js --download"
   },
   "dependencies": {
     "express": "^5.1.0",

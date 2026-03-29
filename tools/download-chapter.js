@@ -34,6 +34,23 @@ function prompt(question) {
   return new Promise(resolve => rl.question(question, ans => { rl.close(); resolve(ans.trim()); }));
 }
 
+// ── Partial chapter filtering ────────────────────────────
+// When a whole-number chapter exists (e.g. "14"), decimal siblings
+// (14.5, 14.6) are partial translator splits — skip them.
+
+function filterPartialChapters(chapters) {
+  const numbers = new Set(chapters.map(c => c.number));
+
+  return chapters.filter(c => {
+    const num = parseFloat(c.number);
+    if (!Number.isInteger(num)) {
+      const base = Math.floor(num).toString();
+      if (numbers.has(base)) return false;
+    }
+    return true;
+  });
+}
+
 // Fetch all chapter entries with scanlation groups
 async function getAllChapterData(mangaId) {
   const chapters = [];
@@ -55,9 +72,10 @@ async function getAllChapterData(mangaId) {
       });
     }
 
-    // record chapter entries
+    // record chapter entries — skip null/empty chapter numbers
     json.data.forEach(ch => {
-      const num = ch.attributes.chapter || '0';
+      const num = ch.attributes.chapter;
+      if (num == null || num === '') return;
       const rel = (ch.relationships || []).find(r => r.type === 'scanlation_group');
       const gid = rel?.id;
       chapters.push({ id: ch.id, number: num, groupId: gid });
@@ -78,12 +96,14 @@ async function getAllChapterData(mangaId) {
     }
   }
 
-  // enrich entries
-  return chapters.map(c => ({
+  // enrich and filter partials
+  const enriched = chapters.map(c => ({
     id:        c.id,
     number:    c.number,
     groupName: includedGroups[c.groupId] || 'Unknown'
   }));
+
+  return filterPartialChapters(enriched);
 }
 
 (async () => {
@@ -102,6 +122,7 @@ async function getAllChapterData(mangaId) {
       console.error(`❌ Chapter ${chapNum} not found for manga ${mangaUuid}`);
       process.exit(1);
     } else if (matches.length === 1) {
+      console.log(`ℹ️  Only one source: ${matches[0].groupName} — downloading directly.`);
       chapterId = matches[0].id;
     } else {
       console.log(`\n🚩 Chapter ${chapNum} available from:`);
@@ -111,10 +132,12 @@ async function getAllChapterData(mangaId) {
       let chosen = [];
       if (ans.toLowerCase() === 'a') {
         chosen = matches;
+        console.log(`📥 Downloading from all translators`);
       } else {
         const idx = parseInt(ans,10) - 1;
         if (!matches[idx]) { console.error('❌ Invalid choice'); process.exit(1); }
         chosen = [matches[idx]];
+        console.log(`📥 Translator: ${matches[idx].groupName}`);
       }
       // download all chosen
       for (const { id } of chosen) {
@@ -132,7 +155,14 @@ async function getAllChapterData(mangaId) {
     // fetch chapter info
     const meta = await fetchJsonSafe(`https://api.mangadex.org/chapter/${chapterId}`, 'getChapterInfo');
     const mangaId = meta.data.relationships.find(r=>r.type==='manga')?.id;
-    let chapNum = meta.data.attributes.chapter || '1';
+    let chapNum = meta.data.attributes.chapter;
+
+    // Reject chapters with no number — can't place them in folder structure
+    if (chapNum == null || chapNum === '') {
+      console.error('❌ This chapter has no number assigned on MangaDex. Skipping.');
+      process.exit(1);
+    }
+
     const ah = await fetchJsonSafe(`https://api.mangadex.org/at-home/server/${chapterId}`, 'getAtHomeServer');
     const baseUrl = ah.baseUrl;
     const hash = ah.chapter.hash;
